@@ -5,7 +5,9 @@ Sitio local con las estadísticas mensuales de exportación de la
 (informes EL 807 a EL 816: temporada 2025/26 completa y 2026/27 hasta octubre), y una página
 histórica (`site/historia.html`) con los
 [informes anuales](https://www.flasite.com/index.php/es/publicaciones/estadistica-anual-2018)
-EL 488 a EL 812: temporadas 1998/99 a 2025/26.
+EL 488 a EL 812: temporadas 1998/99 a 2025/26. La página `site/industria.html` responde qué se fabrica
+en el país con esa lana: etapa en que se exporta, consumo industrial interno, precio por kilo en cada
+etapa, comercio de hilados, telas y prendas de lana (UN Comtrade, 2000 en adelante) y quién industrializa.
 
 ## Ver el sitio
 
@@ -18,7 +20,9 @@ uv run --frozen python build.py --fetch
 ```
 
 `--fetch` lee las páginas de la FLA, baja los PDF mensuales que falten a `data/raw/` y los anuales a
-`data/raw/anuales/`, y anota su URL en el `fuentes.json` de cada carpeta. Sin `--fetch`, sólo vuelve a leer los PDF que ya están. Para otro año,
+`data/raw/anuales/`, baja de la API pública de UN Comtrade los años que falten a `data/raw/comercio/`
+(unos dos minutos: la API admite una consulta por segundo), y anota su URL en el `fuentes.json` de cada
+carpeta. Un año de Comtrade ya bajado no se vuelve a pedir; para refrescarlo, borrá su archivo. Sin `--fetch`, sólo vuelve a leer los PDF que ya están. Para otro año,
 agregá su página a `LISTING_PAGES` en `pipeline/fetch.py`.
 
 El build se detiene si un PDF no cuadra con sus propios totales o trae un país o un formato
@@ -33,9 +37,20 @@ desconocido; el mensaje dice qué tabla falló. Un país nuevo se agrega en `COU
 - `pipeline/annual.py` — un PDF anual → una temporada cerrada. Desde 2005/06 usa los lectores de tablas de `parse.py`;
   hasta 2004/05 (otro método, destinos en peso efectivo) delega en `pipeline/annual_old.py`.
 - `pipeline/history.py` — las temporadas → las series de `historia.html`.
-- `build.py` — corre todo y escribe `data/processed/` (para revisar), `site/data.js` y `site/historia-data.js`.
+- `pipeline/comtrade.py` — baja y suma el comercio de lana por etapa: lo que informa Argentina
+  (`comtrade-AAAA.json`), lo que los demás países dicen importar de Argentina (`espejo-AAAA.json`) y los
+  orígenes de las importaciones del último año (`origenes-AAAA.json`).
+- `pipeline/industry.py` — consumo interno, hilados y tejidos de la FLA y lana peinada por año calendario
+  → `industria.html`, junto con lo de `comtrade.py`.
+- `build.py` — corre todo y escribe `data/processed/` (para revisar), `site/data.js`, `site/historia-data.js`
+  y `site/industria-data.js`.
 - `site/` — `index.html` y `app.js` (temporada actual), `historia.html` y `historia.js` (1998/99 en adelante),
-  `styles.css`; gráficos con ECharts, incluido en `site/vendor/`.
+  `industria.html` y `industria.js` (lee también `historia-data.js`), `styles.css`; gráficos con ECharts,
+  incluido en `site/vendor/`.
+
+Para lana sucia, lavada y peinada la página de industria usa la FLA, no Comtrade: desde 2018 lo que
+Argentina informa a Comtrade queda por debajo de la FLA y de lo que declaran los compradores (la página
+lo muestra en un gráfico de control).
 
 Los informes anuales no traen todos la misma información: la página histórica tiene una tabla de qué
 serie hay para cada temporada, y lista las diferencias entre tablas de un mismo informe que el build

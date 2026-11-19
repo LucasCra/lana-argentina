@@ -4,10 +4,11 @@
     uv run --frozen python build.py --fetch    # first download new issues from flasite.com
 
 Writes data/processed/informes.json (every parsed table, for checking) and
-site/data.js (what the site draws) from the monthly issues in data/raw, and
+site/data.js (what the site draws) from the monthly issues in data/raw,
 data/processed/anuales.json and site/historia-data.js from the annual issues
-in data/raw/anuales. Stops with the failing check if any PDF does not add up;
-nothing is written in that case.
+in data/raw/anuales, and site/industria-data.js from the annual issues plus
+the UN Comtrade files in data/raw/comercio. Stops with the failing check if
+any source does not add up; nothing is written in that case.
 """
 
 from __future__ import annotations
@@ -19,14 +20,19 @@ from datetime import date
 from pathlib import Path
 
 from pipeline.annual import parse_annual, production_history
+from pipeline.comtrade import derive_trade
+from pipeline.comtrade import fetch as fetch_trade
 from pipeline.derive import derive
 from pipeline.fetch import ANNUAL_PAGES, fetch_new, load_sources
 from pipeline.history import derive_history
+from pipeline.industry import derive_industry
 from pipeline.parse import ReportError, parse_report
 
 ROOT = Path(__file__).parent
 RAW = ROOT / "data" / "raw"
 ANNUAL = RAW / "anuales"
+TRADE = RAW / "comercio"
+FIRST_TRADE_YEAR = 2000
 
 
 def main() -> int:
@@ -36,6 +42,7 @@ def main() -> int:
 
     if args.fetch:
         new = fetch_new(RAW) + fetch_new(ANNUAL, ANNUAL_PAGES)
+        new += fetch_trade(TRADE, range(FIRST_TRADE_YEAR, date.today().year))
         print(f"descargados: {', '.join(new) if new else 'ninguno nuevo'}")
 
     reports = []
@@ -62,6 +69,12 @@ def main() -> int:
         annual, production_history(ANNUAL / latest["archivo"]), load_sources(ANNUAL)
     )
     history["generado"] = data["generado"]
+    try:
+        industry = derive_industry(annual, derive_trade(TRADE))
+    except ReportError as error:
+        print(f"ERROR {TRADE.name}: {error}", file=sys.stderr)
+        return 1
+    industry["generado"] = data["generado"]
 
     processed = ROOT / "data" / "processed"
     processed.mkdir(parents=True, exist_ok=True)
@@ -69,12 +82,18 @@ def main() -> int:
     (processed / "anuales.json").write_text(json.dumps(annual, ensure_ascii=False, indent=1))
     _write_js(ROOT / "site" / "data.js", "DATA", data)
     _write_js(ROOT / "site" / "historia-data.js", "HISTORIA", history)
+    _write_js(ROOT / "site" / "industria-data.js", "INDUSTRIA", industry)
     first, last = reports[0]["numero"], reports[-1]["numero"]
     print(f"{len(reports)} informes: EL {first}–{last} -> site/data.js")
     seasons = history["temporadas"]
     print(
         f"{len(seasons)} anuales: {seasons[0]['temporada']}–{seasons[-1]['temporada']}"
         " -> site/historia-data.js"
+    )
+    trade_years = industry["comercio"]["anios"]
+    print(
+        f"{len(trade_years)} años de Comtrade: {trade_years[0]['anio']}–{trade_years[-1]['anio']}"
+        " -> site/industria-data.js"
     )
     for season in seasons:
         for warning in season["avisos"]:
