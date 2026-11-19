@@ -1,0 +1,30 @@
+# Spell-check settings read by the global pre-commit hook (typos).
+
+# Source PDFs are evidence and vendor files are third-party minified code: not ours to spell-check.
+# The hook passes file names explicitly, which bypasses [files] excludes, so these are file types
+# with checking turned off.
+[type.pdf]
+extend-glob = ["*.pdf"]
+check-file = false
+
+[type.vendor]
+extend-glob = ["*.min.js", "world.js"]
+check-file = false
+
+[default.extend-words]
+# Spanish words in the site, the data keys and the FLA's table names.
+altas = "altas"
+anual = "anual"
+curso = "curso"
+emision = "emision"
+informe = "informe"
+previos = "previos"
+produccion = "produccion"
+producto = "producto"
+productos = "productos"
+revisiones = "revisiones"
+ser = "ser"
+serie = "serie"
+sur = "sur"
+tema = "tema"
+versiones = "versiones"

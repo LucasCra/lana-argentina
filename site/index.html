@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lana argentina · exportaciones</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <div>
+      <h1>Exportaciones de lana argentina</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#resumen">Resumen</a>
+      <a href="#mensual">Mes a mes</a>
+      <a href="#temporadas">Temporadas</a>
+      <a href="#destinos">Destinos</a>
+      <a href="#calidad">Precio y calidad</a>
+      <a href="#balance">Balance</a>
+      <a href="#puertos">Puertos</a>
+      <a href="#fuentes">Fuentes</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="resumen">
+    <div class="hero-grid" id="kpis"></div>
+    <p class="note" id="kpi-note"></p>
+  </section>
+
+  <section id="mensual">
+    <h2>Mes a mes</h2>
+    <p class="lede">Toneladas limpias embarcadas cada mes, según la última versión publicada de cada mes.
+      Junio 2026 incluye el ajuste anual de exportadores no socios de la FLA: no es un mes comparable.</p>
+    <div class="card" data-chart="mensualT"></div>
+    <div class="grid-2">
+      <div class="card" data-chart="mensualPrecio"></div>
+      <div class="card" data-chart="mensualUsd"></div>
+    </div>
+  </section>
+
+  <section id="temporadas">
+    <h2>Temporada contra temporada</h2>
+    <p class="lede" id="temporadas-lede"></p>
+    <div class="grid-2">
+      <div class="card" data-chart="acumT"></div>
+      <div class="card" data-chart="acumUsd"></div>
+    </div>
+    <div class="card" data-chart="compProd"></div>
+  </section>
+
+  <div class="season-bar" id="season-bar">
+    <span>Las secciones siguientes muestran el acumulado de</span>
+    <div class="seg" role="radiogroup" aria-label="Temporada" id="season-seg"></div>
+  </div>
+
+  <section id="destinos">
+    <h2>Destinos</h2>
+    <p class="lede" id="destinos-lede"></p>
+    <div class="card" data-chart="mapa"></div>
+    <div class="card" data-chart="destinos"></div>
+    <div class="card" data-chart="bloques"></div>
+  </section>
+
+  <section id="calidad">
+    <h2>Precio y calidad</h2>
+    <p class="lede">Precio implícito: ingreso de divisas dividido por toneladas limpias, por producto. Es un
+      promedio FOB declarado, no una cotización de mercado.</p>
+    <div class="grid-2">
+      <div class="card" data-chart="precioProd"></div>
+      <div class="card" data-chart="finura"></div>
+    </div>
+    <div class="card" data-chart="micron"></div>
+  </section>
+
+  <section id="balance">
+    <h2>Balance de oferta</h2>
+    <p class="lede">Toneladas base sucia. Durante la temporada, producción y consumo local son
+      <strong>estimaciones de la FLA para la temporada completa</strong>; el remanente es esa estimación menos lo
+      exportado hasta la fecha, no un stock medido.</p>
+    <div class="grid-2">
+      <div class="card" data-chart="balance"></div>
+      <div class="card" data-chart="remanente"></div>
+    </div>
+  </section>
+
+  <section id="puertos">
+    <h2>Puertos de salida</h2>
+    <div class="card" data-chart="puertos"></div>
+  </section>
+
+  <section id="fuentes">
+    <h2>Revisiones, fuentes y método</h2>
+    <div>
+      <div class="card prose">
+        <h3>Meses revisados</h3>
+        <p class="note">La FLA corrige meses ya publicados. El sitio usa siempre la última versión.</p>
+        <div id="revisiones"></div>
+      </div>
+      <div class="card prose">
+        <h3>Informes usados</h3>
+        <div id="informes"></div>
+      </div>
+    </div>
+    <div class="card prose" id="metodo">
+      <h3>Cómo leer estos números</h3>
+      <ul>
+        <li><strong>Base limpia y base sucia.</strong> La lana sucia pesa más que la lana que rinde una vez lavada.
+          Casi todo el sitio está en toneladas limpias, la única base que permite comparar lana sucia con lavada,
+          peinada y subproductos. El balance de oferta está en toneladas sucias, como lo publica la FLA.</li>
+        <li><strong>Acumulado de temporada.</strong> La temporada lanera va de julio a junio. Cada informe publica
+          el acumulado desde julio. Sólo la tabla mensual da cada mes por separado, y sólo en toneladas por
+          producto e ingreso total.</li>
+        <li><strong>Bloques entre informes.</strong> Para ver destinos mes a mes, el sitio resta el acumulado de
+          un informe menos el del informe anterior. Esa resta incluye las revisiones que el informe nuevo hizo
+          sobre meses anteriores, así que un bloque puede diferir del mes según la tabla mensual. Julio 2025 a
+          enero 2026 llega como un único bloque porque el informe de diciembre 2025 (EL 806) no está entre los diez.</li>
+        <li><strong>Lo que el sitio calcula.</strong> Participaciones, precios por kilo y micronaje promedio se
+          calculan aquí a partir de toneladas y dólares. No se usan los porcentajes impresos (tienen errores, como
+          “33% / 73%” en EL 816) ni los promedios de micronaje impresos, que no se pueden reproducir con la tabla
+          de micrones del mismo informe. El micronaje promedio es ponderado por toneladas, con el punto medio de
+          cada rango.</li>
+        <li><strong>Junio 2026.</strong> Incluye el ajuste anual de exportadores no socios (5.329 t, 20% de la
+          temporada). Su precio por kilo bajo refleja esa mezcla, no un cambio de mercado.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p id="foot"></p>
+</footer>
+
+<script src="vendor/echarts.min.js"></script>
+<script src="vendor/world.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
