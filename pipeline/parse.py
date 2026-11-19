@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -72,6 +73,7 @@ COUNTRIES = {
     "Arabia Saudita": "Saudi Arabia",
     "Australia": "Australia",
     "Austria": "Austria",
+    "Bahamas": "Bahamas",
     "Bangladesh": "Bangladesh",
     "Bélgica": "Belgium",
     "Bolivia": "Bolivia",
@@ -85,10 +87,12 @@ COUNTRIES = {
     "Corea del Sur": "Korea",
     "Croacia": "Croatia",
     "Dinamarca": "Denmark",
+    "Djiboutí": "Djibouti",
     "Ecuador": "Ecuador",
     "Egipto": "Egypt",
     "Emiratos Árabes Unidos": "United Arab Emirates",
     "Eslovaquia": "Slovakia",
+    "Eslovenia": "Slovenia",
     "España": "Spain",
     "Estados Unidos": "United States",
     "Finlandia": "Finland",
@@ -99,6 +103,7 @@ COUNTRIES = {
     "India": "India",
     "Indonesia": "Indonesia",
     "Irán": "Iran",
+    "Islas Mauricio": "Mauritius",
     "Israel": "Israel",
     "Italia": "Italy",
     "Japón": "Japan",
@@ -110,6 +115,7 @@ COUNTRIES = {
     "Malta": "Malta",
     "Marruecos": "Morocco",
     "México": "Mexico",
+    "Noruega": "Norway",
     "Nueva Zelanda": "New Zealand",
     "Países Bajos": "Netherlands",
     "Paquistán": "Pakistan",
@@ -154,6 +160,7 @@ HEADER_KEYS = {
 }
 
 PRODUCT_COLUMNS = [*PRODUCTS, "total", "share"]
+OPTIONAL_COLUMNS = {"hilados", "tejidos", "share"}
 
 
 class ReportError(ValueError):
@@ -435,6 +442,8 @@ def _columns(header: list[str], expected: list[str]) -> dict[str, int]:
 
     By header name when every named header cell is recognised; by position
     among the named cells otherwise (one issue prints a garbled header).
+    Annual issues before 2016/17 print no Hilados/Tejidos columns and some no
+    share column, so those may be missing; every other expected column must be there.
     """
     named = [i for i, c in enumerate(header) if i > 0 and c and c != header[0]]
     keys = [HEADER_KEYS.get(_first_line(header[i]).lower()) for i in named]
@@ -443,7 +452,7 @@ def _columns(header: list[str], expected: list[str]) -> dict[str, int]:
             raise ReportError(f"cannot map header {header!r}")
         keys = expected
     mapping = dict(zip(keys, named, strict=True))
-    if set(mapping) != set(expected):
+    if not set(expected) - OPTIONAL_COLUMNS <= set(mapping) <= set(expected):
         raise ReportError(f"header {header!r} has columns {sorted(mapping)}, expected {expected}")
     return mapping
 
@@ -479,6 +488,10 @@ def _country(label: str) -> str:
     # Cells hold the Spanish then the English name: "República Checa Czech Republic".
     for name in sorted(COUNTRIES, key=len, reverse=True):
         if label == name or label.startswith(name + " "):
+            return name
+    # A clipped Spanish name ("talia Italy") is still identified by the English one.
+    for name, english in COUNTRIES.items():
+        if english != "China" and label.endswith(" " + english) and name.endswith(label.split()[0]):
             return name
     raise ReportError(f"unknown country {label!r}: add it to COUNTRIES")
 
@@ -533,31 +546,44 @@ def _check_rows(rows: list[dict], keys: list[str], label: str, name_key: str) ->
     return total
 
 
-def _check(report: dict[str, Any]) -> None:
+def _check(report: dict[str, Any], warn: Callable[[str], None] | None = None) -> None:
+    """Raise on the first failed check. With `warn`, a disagreement between two
+    tables (rather than within one) is passed to `warn` instead: the annual
+    issues carry a few such errors at source, and the season is still usable."""
     name = report["archivo"]
+
+    def between(a: float, b: float, addends: int, label: str) -> None:
+        try:
+            _close(a, b, addends, label)
+        except ReportError as error:
+            if warn is None:
+                raise
+            warn(str(error))
+
     grand = _check_rows(report["destinos"], PRODUCTS, f"{name} destinos", "pais")
     total = grand["total"]
 
-    for product, rows in report["por_producto"].items():
-        t = _check_rows(rows, FINENESS, f"{name} {product}", "pais")
-        _close(t["total"], grand.get(product, 0.0), 1, f"{name} {product} vs destinos")
-    for product in PRODUCTS:
-        if grand.get(product) and product not in report["por_producto"]:
-            raise ReportError(f"{name}: no per-product table for {product}")
+    if "por_producto" in report:  # the annual reader does not keep these tables
+        for product, rows in report["por_producto"].items():
+            t = _check_rows(rows, FINENESS, f"{name} {product}", "pais")
+            between(t["total"], grand.get(product, 0.0), 1, f"{name} {product} vs destinos")
+        for product in PRODUCTS:
+            if grand.get(product) and product not in report["por_producto"]:
+                raise ReportError(f"{name}: no per-product table for {product}")
 
     fin = report["finura"]
     for key, row in fin.items():
         parts = [row[k] for k in FINENESS if k in row]
         _close(sum(parts), row["total"], len(parts), f"{name} finura {key}")
-    _close(fin["__total__"]["total"], total, 1, f"{name} finura vs destinos")
+    between(fin["__total__"]["total"], total, 1, f"{name} finura vs destinos")
 
     _check_rows(report["micrones"], PRODUCTS, f"{name} micrones", "rango")
     micron_total = next(r for r in report["micrones"] if r["rango"] == "__total__")
-    _close(micron_total["total"], total, 1, f"{name} micrones vs destinos")
+    between(micron_total["total"], total, 1, f"{name} micrones vs destinos")
 
     _check_rows(report["puertos"], PRODUCTS, f"{name} puertos", "puerto")
     port_total = next(r for r in report["puertos"] if r["puerto"] == "__total__")
-    _close(port_total["total"], total, 1, f"{name} puertos vs destinos")
+    between(port_total["total"], total, 1, f"{name} puertos vs destinos")
 
     monthly = report["mensual"]
     if len(monthly) != report["meses"]:
@@ -565,10 +591,9 @@ def _check(report: dict[str, Any]) -> None:
     for r in monthly:
         parts = [r[k] for k in PRODUCTS if k in r]
         _close(sum(parts), r["total"], len(parts), f"{name} mensual {r['mes']}")
-    _close(sum(r["total"] for r in monthly), total, len(monthly), f"{name} mensual vs destinos")
+    between(sum(r["total"] for r in monthly), total, len(monthly), f"{name} mensual vs destinos")
     income = sum(r["ingresos"] for r in monthly)
-    if abs(income - report["ingresos"]["total"]) > 1.0 * len(monthly):
-        raise ReportError(f"{name}: monthly income {income} != {report['ingresos']['total']}")
+    between(income, report["ingresos"]["total"], 20 * len(monthly), f"{name} ingresos mensual")
     parts = [report["ingresos"][p] for p in PRODUCTS if p in report["ingresos"]]
     if abs(sum(parts) - report["ingresos"]["total"]) > 1.0 * len(parts):
         raise ReportError(f"{name}: income by product does not add up")

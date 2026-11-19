@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lana argentina · historia</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <div>
+      <h1>Lana argentina, temporada por temporada</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#resumen">Resumen</a>
+      <a href="#exportaciones">Exportaciones</a>
+      <a href="#destinos">Destinos</a>
+      <a href="#finura">Finura</a>
+      <a href="#produccion">Producción y balance</a>
+      <a href="#estacionalidad">Mes a mes</a>
+      <a href="#fuentes">Fuentes</a>
+      <a href="index.html"><strong>Temporada actual →</strong></a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="resumen">
+    <div class="hero-grid" id="kpis"></div>
+    <p class="note" id="kpi-note"></p>
+  </section>
+
+  <section id="exportaciones">
+    <h2>Exportaciones por temporada</h2>
+    <p class="lede">Toneladas limpias y dólares de cada temporada completa (julio a junio), según el informe
+      anual de la FLA que la cierra. Las toneladas limpias son comparables en todas las temporadas; antes de
+      2005/06 salen de la tabla de “equivalente teórico base limpia”.</p>
+    <div class="card" data-chart="toneladas"></div>
+    <div class="grid-2">
+      <div class="card" data-chart="ingresos"></div>
+      <div class="card" data-chart="precio"></div>
+    </div>
+  </section>
+
+  <section id="destinos">
+    <h2>Destinos</h2>
+    <p class="lede" id="destinos-lede"></p>
+    <div class="card" data-chart="destinos"></div>
+  </section>
+
+  <section id="finura">
+    <h2>Finura</h2>
+    <p class="lede">Hasta 2004/05 la FLA clasificaba en cinco finuras (fina hasta 24,9 µ, cruza fina, mediana,
+      criolla, gruesa); desde 2005/06 en tres (fina hasta 24,5 µ, mediana, gruesa). Sólo la participación de la
+      lana fina se puede seguir a través del cambio, con un corte 0,4 µ más fino desde 2005/06.</p>
+    <div class="grid-2">
+      <div class="card" data-chart="finaPct"></div>
+      <div class="card" data-chart="micron"></div>
+    </div>
+  </section>
+
+  <section id="produccion">
+    <h2>Producción y balance</h2>
+    <p class="lede">Toneladas base sucia. La producción de cada zafra es una estimación de la FLA que se revisa
+      después; el gráfico de producción usa la serie revisada del último informe anual.</p>
+    <div class="card" data-chart="produccion"></div>
+    <div class="grid-2">
+      <div class="card" data-chart="revision"></div>
+      <div class="card" data-chart="balance"></div>
+    </div>
+  </section>
+
+  <section id="estacionalidad">
+    <h2>Mes a mes</h2>
+    <p class="lede">Toneladas limpias embarcadas cada mes, desde 2005/06 (antes la tabla mensual está en peso
+      efectivo). Los meses de junio marcados con * incluyen el ajuste anual de exportadores no socios.</p>
+    <div class="card" data-chart="calor"></div>
+    <div class="card" data-chart="patagonia"></div>
+  </section>
+
+  <section id="fuentes">
+    <h2>Qué trae cada informe, fuentes y método</h2>
+    <div class="card prose">
+      <h3>Qué información hay para cada temporada</h3>
+      <p class="note">Los informes anuales no traen siempre lo mismo. ● = disponible y usado; ○ = impreso en
+        otra base (peso efectivo), usado con aviso; – = no disponible.</p>
+      <div id="disponibilidad"></div>
+    </div>
+    <div class="card prose">
+      <h3>Diferencias entre tablas de un mismo informe</h3>
+      <p class="note">Cada tabla cuadra con sus propios totales. Estas son las diferencias entre tablas que
+        deberían coincidir; vienen así en el PDF.</p>
+      <div id="avisos"></div>
+    </div>
+    <div class="card prose">
+      <h3>Informes usados</h3>
+      <div id="informes"></div>
+    </div>
+    <div class="card prose" id="metodo">
+      <h3>Cómo leer estos números</h3>
+      <ul>
+        <li><strong>Peso efectivo antes de 2005/06.</strong> Hasta 2004/05 las tablas por destino, puerto y mes
+          están en peso efectivo: la lana sucia figura con su peso sucio y el resto con su peso limpio. Por eso
+          los destinos de lana sucia (Francia, Alemania, Uruguay, Bélgica) pesan más en esos años que si
+          estuvieran en base limpia. El gráfico de destinos marca esas temporadas.</li>
+        <li><strong>Productos.</strong> Hasta 2002/03 la FLA separaba once productos; aquí se agrupan en los
+          siete actuales: pelada con sucia, carbonizada con lavada, productos terminados con tejidos,
+          desperdicios y varios con subproductos.</li>
+        <li><strong>Dólares corrientes.</strong> Los ingresos y precios son dólares FOB de cada año, sin ajustar
+          por inflación. Antes de 2005/06 el informe los da en miles de dólares.</li>
+        <li><strong>Remanente.</strong> Algunos años la FLA restó un “stock operativo” del remanente. El sitio
+          usa disponibilidad − consumo local − exportado, que significa lo mismo en todos los informes. Los
+          balances de temporadas consecutivas no encadenan: la FLA reestima el remanente inicial.</li>
+        <li><strong>Lo que el sitio calcula.</strong> Participaciones, precios por kilo y micronaje promedio
+          (ponderado por toneladas, con el punto medio de cada rango) se calculan aquí. No se usan los
+          porcentajes impresos.</li>
+        <li><strong>Lo que falta.</strong> Algunas páginas de EL 488, 500, 512 y 524 son imágenes escaneadas sin
+          texto. Ninguna tiene las tablas que usa el sitio, salvo la tabla mensual de EL 500 y la de puertos
+          de EL 524, que de todos modos están en peso efectivo. Las tablas de cueros lanares (hasta 2016/17)
+          no se usan.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p id="foot"></p>
+</footer>
+
+<script src="vendor/echarts.min.js"></script>
+<script src="historia-data.js"></script>
+<script src="historia.js"></script>
+</body>
+</html>

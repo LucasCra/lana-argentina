@@ -20,10 +20,13 @@ BASE = "https://www.flasite.com"
 LISTING_PAGES = [
     f"{BASE}/index.php/es/publicaciones/estadistica-mensual/mensuales-2026",
 ]
+# Annual (June) issues go to their own folder: they share numbers with monthly ones.
+ANNUAL_PAGES = [f"{BASE}/index.php/es/publicaciones/estadistica-anual-2018"]
 _USER_AGENT = "Mozilla/5.0 (compatible; lana-argentina-local/0.1)"
 
 
 def fetch_new(raw_dir: Path, pages: list[str] = LISTING_PAGES) -> list[str]:
+    raw_dir.mkdir(parents=True, exist_ok=True)
     sources = load_sources(raw_dir)
     downloaded = []
     for page in pages:
