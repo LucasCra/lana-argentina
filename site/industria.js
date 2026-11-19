@@ -675,10 +675,12 @@
         true,
       ),
       tile(
-        `Exportado como hilado o tejido ${last.temporada}`,
+        `Exportado como hilado o tejido ${last.temporada}, según la FLA`,
         num(manLast / 1e6, 1),
         "M USD",
-        `Última temporada con hilados: ${lastYarn.temporada} (${tons(lastYarn.hilados.t)}). Como peinada: ${usdM(last.ingresos.peinada, 0)}.`,
+        `Última temporada con hilados: ${lastYarn.temporada} (${tons(lastYarn.hilados.t)}). ` +
+          (mirrorManUsd(lastY) != null ? `Los compradores declaran ${usdM(mirrorManUsd(lastY))} de hilados y telas argentinos en ${lastY.anio}. ` : "") +
+          `Como peinada: ${usdM(last.ingresos.peinada, 0)}.`,
       ),
       tile(
         `Importado en manufacturas de lana ${lastY.anio}`,
@@ -713,9 +715,14 @@
 
     const dirtyShare = (s) => stageT(s, "sucia") / s.total_t;
     const prevMax = seasons.slice(0, -1).reduce((a, b) => (dirtyShare(b) > dirtyShare(a) ? b : a));
+    const june = last.mensual?.[11];
+    const prevJune = seasons[seasons.length - 2].mensual?.[11];
     document.getElementById("etapas-lede").textContent =
       `En ${last.temporada} salió como lana sucia el ${pct(dirtyShare(last))} de las toneladas limpias; ` +
-      `el máximo anterior de la serie fue ${pct(dirtyShare(prevMax))} en ${prevMax.temporada}.`;
+      `el máximo anterior de la serie fue ${pct(dirtyShare(prevMax))} en ${prevMax.temporada}.` +
+      (june?.ajuste_anual
+        ? ` Esa temporada incluye en junio el ajuste anual de exportadores no socios de la FLA: ${tons(june.t)} ese mes${prevJune ? `, contra ${tons(prevJune.t)} en junio del año anterior` : ""}.`
+        : "");
 
     renderControlNote();
 
