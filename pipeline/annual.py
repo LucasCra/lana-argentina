@@ -17,7 +17,9 @@ figures, keyed like `parse.parse_report` where the information is the same:
   them, and `remanente_total` = availability - local use - exports, which is
   the carryover the next season starts from in every issue after 2003/04.
 
-Every table is checked against its own totals and against the front page.
+Every table is checked against its own totals. From 2005/06 the income total is
+also checked against the front page, and clean tons too where the front page
+prints them in a form the regex reads (13 of the 21 issues).
 Any mismatch, unknown country or layout raises `ReportError`.
 
 Implementation decision worth knowing: tables are found with the monthly
