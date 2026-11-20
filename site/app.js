@@ -1093,7 +1093,10 @@
       .join("");
     const node = card.querySelector(".chart");
     instances[id] ??= echarts.init(node, null, { renderer: "canvas" });
-    instances[id].setOption(spec.option(), true);
+    const option = spec.option();
+    // Con "reducir movimiento" el gráfico aparece sin animación.
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) option.animation = false;
+    instances[id].setOption(option, true);
     renderTable(id);
   }
 
@@ -1214,23 +1217,34 @@
     return versions.filter((v, i) => i === 0 || Math.abs(v.total_t - versions[i - 1].total_t) > 0.05);
   }
 
+  // Flechas, Inicio y Fin eligen otra temporada, como en un grupo de botones de radio.
+  function arrowSelect(e, seg) {
+    const bs = [...seg.querySelectorAll("button")];
+    const i = bs.indexOf(e.currentTarget);
+    const j = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: bs.length - 1 }[e.key];
+    if (j === undefined) return;
+    e.preventDefault();
+    bs[(j + bs.length) % bs.length].click();
+  }
+
   function renderSeasonSeg() {
     const seg = document.getElementById("season-seg");
     seg.innerHTML = [...seasons]
       .reverse()
       .map(
         (s) =>
-          `<button type="button" role="radio" aria-checked="${s.temporada === season}" data-s="${s.temporada}">${esc(seasonLabel(s))}</button>`,
+          `<button type="button" role="radio" aria-checked="${s.temporada === season}" tabindex="${s.temporada === season ? 0 : -1}" data-s="${s.temporada}">${esc(seasonLabel(s))}</button>`,
       )
       .join("");
-    seg.querySelectorAll("button").forEach((b) =>
+    seg.querySelectorAll("button").forEach((b) => {
       b.addEventListener("click", () => {
         season = b.dataset.s;
         renderSeasonSeg();
         seg.querySelector('[aria-checked="true"]').focus(); // el selector se vuelve a dibujar: sin esto el teclado pierde el foco
         renderSeasonal();
-      }),
-    );
+      });
+      b.addEventListener("keydown", (e) => arrowSelect(e, seg));
+    });
   }
 
   function renderSeasonal() {

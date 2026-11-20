@@ -603,7 +603,10 @@
       .join("");
     const node = card.querySelector(".chart");
     instances[id] ??= echarts.init(node, null, { renderer: "canvas" });
-    instances[id].setOption(spec.option(), true);
+    const option = spec.option();
+    // Con "reducir movimiento" el gráfico aparece sin animación.
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) option.animation = false;
+    instances[id].setOption(option, true);
     renderTable(id);
   }
 
@@ -1045,19 +1048,31 @@
 
   // ------------------------------------------------------------ selector de temporada
 
+  // Flechas, Inicio y Fin eligen otra temporada, como en un grupo de botones de radio.
+  function arrowSelect(e, seg) {
+    const bs = [...seg.querySelectorAll("button")];
+    const i = bs.indexOf(e.currentTarget);
+    const j = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: bs.length - 1 }[e.key];
+    if (j === undefined) return;
+    e.preventDefault();
+    bs[(j + bs.length) % bs.length].click();
+  }
+
   function renderSeg() {
     const seg = document.getElementById("finura-seg");
     seg.innerHTML = FIN.map(
-      (s, i) => `<button type="button" role="radio" aria-checked="${s === finSeason}" data-i="${i}">${esc(seasonLabel(s))}</button>`,
+      (s, i) =>
+        `<button type="button" role="radio" aria-checked="${s === finSeason}" tabindex="${s === finSeason ? 0 : -1}" data-i="${i}">${esc(seasonLabel(s))}</button>`,
     ).join("");
-    seg.querySelectorAll("button").forEach((b) =>
+    seg.querySelectorAll("button").forEach((b) => {
       b.addEventListener("click", () => {
         finSeason = FIN[Number(b.dataset.i)];
         renderSeg();
         seg.querySelector('[aria-checked="true"]').focus(); // el selector se vuelve a dibujar: sin esto el teclado pierde el foco
         render("finura");
-      }),
-    );
+      });
+      b.addEventListener("keydown", (e) => arrowSelect(e, seg));
+    });
   }
 
   function renderAll() {
