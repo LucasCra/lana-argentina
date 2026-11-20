@@ -12,6 +12,7 @@
   const M = D.masas;
   const price = D.precio_usd;
   const tops = D.peinada;
+  const R = D.rangos;
   const part = (s, id) => s.partes.find((p) => p.id === id)?.usd ?? 0;
 
   const SNAME = {
@@ -161,7 +162,9 @@
       title: () => `De ${num(S.peinada.vende_usd, 2)} a ${num(price, 2)} dólares`,
       sub: () => "Lo que agrega cada etapa a una remera y en qué se va, en dólares por remera",
       legend: () => CLASSES.map((k) => ({ label: CNAME[k], color: cColor(k) })),
-      foot: "Cada barra empieza donde terminó la anterior. Las etapas de fábrica (hilado, tela y confección) son las menos seguras: ver “Qué cambia si cambia un supuesto”.",
+      foot: () =>
+        `Cada barra empieza donde terminó la anterior. Las etapas de fábrica (hilado, tela y confección) son las menos seguras: según la fuente, ` +
+        `la remera sale de la fábrica a entre ${num(D.fabrica.bajo, 2)} y ${num(D.fabrica.alto, 2)} USD (caso central, ${num(D.fabrica.central, 2)}). Ver “Qué cambia si cambia un supuesto”.`,
       height: "tall",
       option() {
         const rows = cascadeRows();
@@ -423,7 +426,8 @@
         "Lana argentina en la remera",
         num(S.peinada.vende_usd, 2),
         "USD",
-        `${share(S.peinada.vende_usd)} de los ${num(price)} dólares: ${grams(M.peinada_g)} de peinada a ${perKg(tops.cerrada.usd_kg)} (FLA ${tops.cerrada.temporada}).`,
+        `${share(S.peinada.vende_usd)} de los ${num(price)} dólares: ${grams(M.peinada_g)} de peinada a ${perKg(tops.cerrada.usd_kg)} (FLA ${tops.cerrada.temporada}). ` +
+          `Según el peso de la remera y las mermas, entre ${num(R.lana_masa_usd.min, 2)} y ${num(R.lana_masa_usd.max, 2)}.`,
         true,
       ),
       tile(
@@ -436,16 +440,22 @@
         "Flete y arancel de EE. UU.",
         num(S.importacion.agrega_usd, 2),
         "USD",
-        `Arancel de ${pct(D.arancel.total, 1)} sobre el precio de fábrica: ${pct(D.arancel.nmf)} general y ${pct(D.arancel.s301, 1)} de recargo a Vietnam.`,
+        `Arancel de ${pct(D.arancel.total, 1)} sobre el precio de fábrica: ${pct(D.arancel.nmf)} general y ${pct(D.arancel.s301, 1)} de recargo a Vietnam ` +
+          `(${pct(D.arancel.nmf + D.arancel.china)} si se hace en China).`,
       ),
       tile(
         "Marca y tienda",
         num(shop.agrega_usd, 2),
         "USD",
-        `${share(shop.agrega_usd)} del precio. Ganancia estimada de la marca: ${usd(part(shop, "ganancia"))} por remera.`,
+        `${share(shop.agrega_usd)} del precio. Ganancia estimada de la marca: ${usd(part(shop, "ganancia"))} por remera; ` +
+          `entre ${num(R.ganancia_marca_usd.min, 2)} y ${num(R.ganancia_marca_usd.max, 2)} según los supuestos, a precio pleno.`,
       ),
     ].join("");
     const pr = D.producto;
+    document.getElementById("marco").innerHTML =
+      `<strong>Una cuenta hipotética.</strong> ${esc(pr.lana.texto)} ` +
+      `(${link(pr.lana.url_marca, "Smartwool")}, ${link(pr.lana.url_tienda, "REI")}). ` +
+      `Esta página no sigue la lana real de la remera: supone que fuera peinada argentina, a su precio de exportación, y calcula cuánto agrega cada etapa desde ahí.`;
     document.getElementById("kpi-note").innerHTML =
       `${link(pr.url, `${pr.nombre} (${pr.estilo})`)}: ${esc(pr.composicion)}, hecha en ${esc(pr.origen)}, ${usd(price)} en la tienda de la marca en EE. UU., sin impuesto a las ventas (leído el ${longDate(pr.leido)}). ` +
       `Dueña de la marca: ${link(pr.duenio_url, pr.duenio)}.`;
@@ -464,7 +474,8 @@
       `<strong>Ojo con la finura:</strong> la FLA clasifica como fina (hasta 24,5 micras) el ${pct(tops.cerrada.fina_pct)} de la peinada exportada en ${tops.cerrada.temporada} y no publica precios por micronaje; ` +
       `una remera para usar sobre la piel lleva lana más fina (Icebreaker declara 18,9 micras para la suya). ` +
       `En ${monthList(same.meses)} la peinada argentina valió ${perKg(same.usd_kg)}; la australiana de 18,5 micras, ${perKg(f.usd_kg)} en Italia, ` +
-      `${num(f.usd_kg / same.usd_kg, 1)} veces ese precio. Con esa lana, la remera lleva ${usd(SC.peinada_fina.peinada_usd)} de lana.`;
+      `${num(f.usd_kg / same.usd_kg, 1)} veces ese precio (la búsqueda no encontró listados de Vercelli posteriores a julio de 2026). ` +
+      `Con esa lana, la remera lleva ${usd(SC.peinada_fina.peinada_usd)} de lana.`;
     document.getElementById("nota-finura").innerHTML =
       `<strong>La finura.</strong> La FLA no publica el precio de la peinada por micronaje. El ${pct(tops.cerrada.fina_pct)} de la exportada en ${tops.cerrada.temporada} es fina (hasta 24,5 micras), ` +
       `pero una remera para usar sobre la piel lleva lana más fina. La cuenta usa el precio promedio porque es el punto de partida pedido; el escenario de peinada fina muestra cuánto cambia.`;
@@ -474,14 +485,12 @@
       `en cada etapa se pierde algo de fibra. El peso de la remera es el supuesto más débil de la cuenta: la marca no lo publica y las mediciones van de ` +
       `${grams(P.peso_prenda_g.min)} a ${grams(P.peso_prenda_g.max)}. Con eso, la lana va de ${usd(SC.peso_min.peinada_usd)} a ${usd(SC.peso_max.peinada_usd)} por remera.`;
 
-    const fullPrice = D.escenarios.filter((s) => s.precio_usd === price);
-    const argentine = fullPrice.filter((s) => s.id !== "peinada_fina").map((s) => s.peinada_usd / s.precio_usd);
-    const brand = fullPrice.map((s) => s.marca_tienda_usd / s.precio_usd);
     const sale = D.escenarios.filter((s) => s.precio_usd < price);
     document.getElementById("supuestos-lede").textContent =
-      `Ningún supuesto cambia el orden de las cosas. A precio pleno, la lana argentina queda entre ${pct(Math.min(...argentine), 1)} y ` +
-      `${pct(Math.max(...argentine), 1)} del precio (${pct(SC.peinada_fina.peinada_usd / price, 1)} si fuera peinada fina australiana), y la marca con la tienda entre ` +
-      `${pct(Math.min(...brand))} y ${pct(Math.max(...brand))}. Lo que más mueve es el costo de fábrica, la parte menos documentada. ` +
+      `Ningún supuesto cambia el orden de las cosas. A precio pleno, la lana argentina queda entre ${pct(R.lana_pct.min, 1)} y ` +
+      `${pct(R.lana_pct.max, 1)} del precio (${pct(SC.peinada_fina.peinada_usd / price, 1)} si fuera peinada fina australiana), la marca con la tienda entre ` +
+      `${pct(R.marca_tienda_pct.min)} y ${pct(R.marca_tienda_pct.max)}, y la ganancia de la marca entre ${usd(R.ganancia_marca_usd.min)} y ${usd(R.ganancia_marca_usd.max)}. ` +
+      `Lo que más mueve es el costo de fábrica, la parte menos documentada. ` +
       sale
         .map((s, i) => {
           const result = s.ganancia_marca_usd < 0 ? `pierde ${usd(-s.ganancia_marca_usd)}` : `gana ${usd(s.ganancia_marca_usd)}`;
@@ -531,14 +540,19 @@
         `según su documento de 2023, Chargeurs tiene la peinaduría de Trelew como negocio conjunto, sin consolidarla. La línea de peinada de Xinao tuvo ${ref("Xinao, línea de peinada", "7,2 % de margen bruto")}.`,
       `<strong>Hilado, ${usd(S.hilado.agrega_usd)}.</strong> El hilandero compra ${grams(M.peinada_g)} de peinada y ${grams(M.nailon_g)} de nailon, pierde ` +
         `${grams(S.hilado.merma_g)} de fibra y entrega ${grams(M.hilado_g)} de hilado, que vale ${perKg(S.hilado.usd_kg)}. ` +
-        `Paga energía, mano de obra, el alma de nailon y el viaje de la peinada hasta la hilandería. Ganancia supuesta: ${pct(S.hilado.margen, 1)} de lo que vende (Xinao).`,
+        `Paga energía, mano de obra, el alma de nailon y el viaje de la peinada hasta la hilandería. ` +
+        `El precio del hilado sale de un solo aviso de Made-in-China (${perKg(P.hilado_fino_usd_kg.valor, 0)} por un hilado extrafino, pedido mínimo de 10 kg, sin micronaje), ` +
+        `menos la diferencia de precio de la peinada. Ganancia supuesta: ${pct(S.hilado.margen, 1)} de lo que vende (Xinao).`,
       `<strong>Tela, ${usd(S.tela.agrega_usd)}.</strong> Tejido de punto, teñido, terminación y avíos (etiquetas, hilo de coser). Es la etapa de fábrica que más agrega y la menos segura: ` +
         `la hoja de costos de una marca equivale a ${perKg(D.tela_hoja_usd_kg, 0)} de tela de lana fina; los avisos de fábricas chinas piden desde ${perKg(P.tela_catalogo_usd_kg.valor, 0)}, sin decir el micronaje. ` +
+        `Esa hoja (Quince) es de una remera 100 % merino de peso y país desconocidos; ésta lleva ${pct(1 - P.lana_frac.valor)} de nailon. ` +
         `Ganancia supuesta: ${pct(S.tela.margen, 1)} (Nanshan, tela peinada).`,
       `<strong>Confección, ${usd(S.confeccion.agrega_usd)}.</strong> Corte, costura, terminación y embalaje en ${esc(D.producto.origen)}; al cortar se pierden ${grams(S.confeccion.merma_g)} de tela. ` +
         `Ganancia supuesta: ${pct(S.confeccion.margen)} del precio de fábrica, lo que Public Eye anota como finanzas y ganancia en una remera básica de Bangladesh (la ganancia neta es 3 % y los salarios, 12 %).`,
       `<strong>Flete y arancel, ${usd(S.importacion.agrega_usd)}.</strong> Flete y seguro, ${usd(part(S.importacion, "flete"))} (supuesto). ` +
-        `Arancel, ${usd(part(S.importacion, "arancel"))}: EE. UU. lo cobra sobre el precio pagado a la fábrica, sin el flete internacional. Lo cobra el Estado; no es ganancia de nadie en la cadena.`,
+        `Arancel, ${usd(part(S.importacion, "arancel"))}: EE. UU. lo cobra sobre el precio pagado a la fábrica, sin el flete internacional. Lo cobra el Estado; no es ganancia de nadie en la cadena. ` +
+        `${link(D.producto.otro_origen.url, "Otra tienda")} lista el mismo estilo como hecho en China: ahí el arancel sería ${pct(D.arancel.nmf + D.arancel.china)} ` +
+        `y la remera costaría ${usd(SC.hecha_china.importacion_usd - SC.base.importacion_usd)} más (escenario “Hecha en China”).`,
       `<strong>Marca y tienda, ${usd(shop.agrega_usd)}.</strong> Lo que queda entre la remera puesta en EE. UU. (${usd(shop.compra_usd)}) y el precio. ` +
         `Tienda y venta directa (alquiler, personal, web, envíos), ${usd(part(shop, "tienda"))}; marca y oficina central (diseño, publicidad, administración), ${usd(part(shop, "marca"))}: ` +
         `${pct(D.tienda.tienda, 1)} y ${pct(D.tienda.marca, 1)} de las ventas, como en la venta directa de Canada Goose. ` +
@@ -550,10 +564,10 @@
   function renderMargins() {
     const rows = D.comparables.map(
       (c) =>
-        `<tr><td>${esc(c.etapa)}</td><td class="left">${link(c.url, c.empresa)}</td><td>${esc(c.anio)}</td><td>${pct(c.bruto, 1)}</td><td>${pct(c.operativo, 1)}</td><td class="wrap-cell">${esc(c.nota)}</td></tr>`,
+        `<tr><td>${esc(c.etapa)}</td><td class="left">${link(c.url, c.empresa)}</td><td>${esc(c.anio)}</td><td>${pct(c.bruto, 1)}</td><td>${pct(c.operativo, 1)}</td><td>${c.releido ? "sí" : "no"}</td><td class="wrap-cell">${esc(c.nota)}</td></tr>`,
     );
     document.getElementById("tabla-margenes").innerHTML =
-      `<table><thead><tr><th>Etapa</th><th>Empresa</th><th>Año</th><th>Margen bruto</th><th>Margen operativo</th><th>Nota</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
+      `<table><thead><tr><th>Etapa</th><th>Empresa</th><th>Año</th><th>Margen bruto</th><th>Margen operativo</th><th>Releído</th><th>Nota</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
   }
 
   function value(key, p) {

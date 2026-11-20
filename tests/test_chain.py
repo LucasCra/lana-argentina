@@ -172,3 +172,34 @@ def test_every_assumption_names_its_source(tmp_path):
     path.write_text(json.dumps(bad))
     with pytest.raises(ReportError, match="fuera"):
         load_assumptions(path)
+
+
+def test_ranges_bracket_the_base_case(chain):
+    by_id = {s["id"]: s for s in chain["escenarios"]}
+    base = by_id["base"]
+    r = chain["rangos"]
+    assert r["lana_masa_usd"]["min"] == pytest.approx(by_id["peso_min"]["peinada_usd"])
+    assert r["lana_masa_usd"]["min"] <= base["peinada_usd"] <= r["lana_masa_usd"]["max"]
+    profit = r["ganancia_marca_usd"]
+    assert profit["min"] <= base["ganancia_marca_usd"] <= profit["max"]
+    # Sale-price rows are left out: they would drag the brand's profit below zero.
+    assert r["ganancia_marca_usd"]["min"] > 0
+    # Fine tops are not Argentine wool: they must not set the top of the wool share.
+    assert r["lana_pct"]["max"] < by_id["peinada_fina"]["peinada_usd"] / base["precio_usd"]
+
+
+def test_made_in_china_pays_both_china_surcharges(chain):
+    by_id = {s["id"]: s for s in chain["escenarios"]}
+    china, base = by_id["hecha_china"], by_id["base"]
+    assert china["fob_usd"] == pytest.approx(base["fob_usd"])
+    duty = china["importacion_usd"] - chain["parametros"]["flete_usd"]["valor"]
+    assert duty == pytest.approx(china["fob_usd"] * (0.16 + 0.075 + 0.125))
+
+
+def test_every_comparable_says_whether_it_was_reread(tmp_path):
+    data = json.loads(ASSUMPTIONS.read_text())
+    del data["comparables"][0]["releido"]
+    path = tmp_path / "cadena.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(ReportError, match="releido"):
+        load_assumptions(path)

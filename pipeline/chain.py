@@ -58,6 +58,9 @@ def load_assumptions(path: Path) -> dict[str, Any]:
             raise ReportError(
                 f"{key}: el valor {p['valor']} está fuera de [{p['min']}, {p['max']}]"
             )
+    for c in data["comparables"]:
+        if not c.get("url") or not isinstance(c.get("releido"), bool):
+            raise ReportError(f"{c['empresa']}: le falta url o releido")
     return data
 
 
@@ -77,64 +80,88 @@ def derive_chain(monthly: dict[str, Any], assumptions: dict[str, Any]) -> dict[s
     losses = {"m_hilado": "merma_hilado", "m_tejido": "merma_tejido", "m_corte": "merma_corte"}
     actual = fla["actual"]
     scenarios = [
-        ("base", "Caso base", f"Peinada argentina de {fla['cerrada']['temporada']}", central),
+        (
+            "base",
+            "base",
+            "Caso base",
+            f"Peinada argentina de {fla['cerrada']['temporada']}",
+            central,
+        ),
         (
             "peinada_actual",
+            "peinada",
             f"Peinada {actual['temporada']}",
             f"Precio FLA de {actual['temporada']} hasta {actual['hasta']}",
             run(peinada=actual["usd_kg"]),
         ),
         (
             "peinada_fina",
+            "peinada",
             "Peinada fina de 18,5 µ",
             "Peinada australiana del listado de Vercelli",
             run(peinada=base["peinada_fina"]),
         ),
         (
             "fabrica_bajo",
+            "fabrica",
             "Fábrica barata",
             "Tela al precio del aviso más barato",
             run(fabrica="bajo"),
         ),
         (
             "fabrica_alto",
+            "fabrica",
             "Fábrica cara",
             "Remera terminada al precio más alto pedido",
             run(fabrica="alto"),
         ),
         (
             "peso_min",
+            "masa",
             f"Remera de {_es(P['peso_prenda_g']['min'])} g",
             "El peso más bajo publicado",
             run(peso=P["peso_prenda_g"]["min"]),
         ),
         (
             "peso_max",
+            "masa",
             f"Remera de {_es(P['peso_prenda_g']['max'])} g",
             "El peso más alto publicado",
             run(peso=P["peso_prenda_g"]["max"]),
         ),
         (
             "mermas_min",
+            "masa",
             "Mermas mínimas",
             "Hilado, tejido y corte en su mínimo",
             run(**{k: P[name]["min"] for k, name in losses.items()}),
         ),
         (
             "mermas_max",
+            "masa",
             "Mermas máximas",
             "Hilado, tejido y corte en su máximo",
             run(**{k: P[name]["max"] for k, name in losses.items()}),
         ),
         (
             "sin_301",
+            "arancel",
             "Sin el recargo a Vietnam",
             "Sólo el arancel general, si se anula la Sección 301",
             run(arancel=base["nmf"]),
         ),
+        (
+            "hecha_china",
+            "arancel",
+            "Hecha en China",
+            f"Arancel de {_es(100 * (base['nmf'] + base['china']))} %, "
+            "como la partida que otra tienda lista hecha en China",
+            run(arancel=base["nmf"] + base["china"]),
+        ),
         *[
             (
                 f"oferta_{i}",
+                "venta",
                 f"Vendida a {_es(price, 2)}",
                 "Precio de oferta de la misma ficha",
                 run(precio=price),
@@ -142,15 +169,22 @@ def derive_chain(monthly: dict[str, Any], assumptions: dict[str, Any]) -> dict[s
             for i, price in enumerate(P["precios_oferta_usd"]["valor"])
         ],
     ]
+    summaries = [_summary(*s) for s in scenarios]
     return {
         "producto": assumptions["producto"],
         "peinada": {**fla, "fina": {"usd_kg": base["peinada_fina"], "cotizaciones": quotes}},
         "precio_usd": base["precio"],
-        "arancel": {"nmf": base["nmf"], "s301": base["s301"], "total": base["arancel"]},
+        "arancel": {
+            "nmf": base["nmf"],
+            "s301": base["s301"],
+            "china": base["china"],
+            "total": base["arancel"],
+        },
         "tienda": {"tienda": base["tienda"], "marca": base["marca"]},
         **central,
         "fabrica": {k: _ladder({**base, "fabrica": k})["fob_usd"] for k in FACTORY},
-        "escenarios": [_summary(id_, name, what, ladder) for id_, name, what, ladder in scenarios],
+        "escenarios": summaries,
+        "rangos": _ranges(summaries, base["precio"]),
         "parametros": P,
         "comparables": assumptions["comparables"],
     }
@@ -220,6 +254,7 @@ def _params(P: dict[str, Any], tops: float, fine_tops: float) -> dict[str, Any]:
         "flete": v["flete_usd"],
         "nmf": v["arancel_nmf"],
         "s301": v["arancel_301"],
+        "china": v["arancel_china"],
         "arancel": v["arancel_nmf"] + v["arancel_301"],
         "g_hilado": v["margen_hilado"],
         "g_tela": v["margen_tela"],
@@ -336,13 +371,35 @@ def _factory(
     return {**stage, "margen": margin, "merma_g": lost_g}
 
 
-def _summary(id_: str, name: str, what: str, ladder: dict[str, Any]) -> dict[str, Any]:
+def _ranges(summaries: list[dict[str, Any]], price: float) -> dict[str, dict[str, float]]:
+    """How far the headline figures move across the scenarios, at full price.
+
+    The wool's dollars move only with grams (weight and losses); its share also
+    with the season's price. The fine-tops case is not Argentine wool, so it is
+    left out of the wool share but kept for brand and shop.
+    """
+    full = [s for s in summaries if s["precio_usd"] == price]
+
+    def span(xs: list[float]) -> dict[str, float]:
+        return {"min": min(xs), "max": max(xs)}
+
+    grams = [s["peinada_usd"] for s in summaries if s["grupo"] in ("base", "masa")]
+    return {
+        "lana_masa_usd": span(grams),
+        "lana_pct": span([s["peinada_usd"] / price for s in full if s["id"] != "peinada_fina"]),
+        "marca_tienda_pct": span([s["marca_tienda_usd"] / price for s in full]),
+        "ganancia_marca_usd": span([s["ganancia_marca_usd"] for s in full]),
+    }
+
+
+def _summary(id_: str, group: str, name: str, what: str, ladder: dict[str, Any]) -> dict[str, Any]:
     s = {x["id"]: x for x in ladder["etapas"]}
     price = s["tienda"]["vende_usd"]
     factory = sum(s[k]["agrega_usd"] for k in ("hilado", "tela", "confeccion"))
     profit = next(x["usd"] for x in s["tienda"]["partes"] if x["id"] == "ganancia")
     return {
         "id": id_,
+        "grupo": group,
         "nombre": name,
         "cambio": what,
         "precio_usd": price,

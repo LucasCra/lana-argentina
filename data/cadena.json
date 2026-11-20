@@ -9,8 +9,19 @@
     "cita": "Made in Vietnam: 88% Merino Wool, 12% Recycled Nylon",
     "hilado": "Core Spun: lana merino enrollada sobre un alma de nailon",
     "origen": "Vietnam",
-    "duenio": "VF Corporation (la incluye en “All Other” en su 10-Q del 28 de octubre de 2026)",
-    "duenio_url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000135/vfc-20260926.htm"
+    "duenio": "VF Corporation (la incluye en “All Other” en su 10-Q del trimestre cerrado el 26 de septiembre de 2026)",
+    "duenio_url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000135/vfc-20260926.htm",
+    "lana": {
+      "texto": "Smartwool dice que trabaja con la New Zealand Merino Company, creadora de la certificación ZQ, y REI dice que esta remera lleva merino ZQ. Ninguna de las dos dice de qué país viene la lana.",
+      "url_marca": "https://www.smartwool.com/en-us/pages/ethically-sourced-wool",
+      "url_tienda": "https://www.rei.com/product/217786/smartwool-classic-all-season-merino-t-shirt-mens",
+      "leido": "2026-11-20"
+    },
+    "otro_origen": {
+      "texto": "Campmor lista el mismo estilo (SW016948) como “Made in China: 88% Merino Wool, 12% Nylon”, sin fecha y agotado: probablemente una partida anterior.",
+      "url": "https://www.campmor.com/products/smartwool-mens-merino-short-sleeve-tee",
+      "leido": "2026-11-20"
+    }
   },
   "parametros": {
     "precio_tienda_usd": {
@@ -119,7 +130,7 @@
       "fuente": "Borsa Merci di Vercelli, listino n.º 27 del 21 de julio de 2026 (promedios quincenales de la Associazione Nazionale Commercio Laniero); dólares al promedio mensual del BCE de junio y julio de 2026",
       "url": "https://www.pno.camcom.it/sites/default/files/contenuto_redazione/Informazione%20economica/Listini%20prezzi/Prodotti%20agricoli/listino%2027%20del%2021%20luglio.pdf",
       "fecha": "2026-07-21",
-      "nota": "Mismo listado: 19,5 µ a 17,14–17,53 €/kg; 23,5 µ a 13,10–13,27 €/kg; Sudamérica 25,5 µ a 8,10–8,15 €/kg. Icebreaker declara 18,9 µ para su remera 150; Smartwool no publica el micronaje."
+      "nota": "Mismo listado: 19,5 µ a 17,14–17,53 €/kg; 23,5 µ a 13,10–13,27 €/kg; Sudamérica 25,5 µ a 8,10–8,15 €/kg. Icebreaker declara 18,9 µ para su remera 150; Smartwool no publica el micronaje. La búsqueda no encontró listados de Vercelli posteriores al 21 de julio de 2026."
     },
     "hilado_fino_usd_kg": {
       "nombre": "Hilado peinado de merino extrafino",
@@ -220,6 +231,17 @@
       "fecha": "2026-07-28",
       "nota": "El anexo de exenciones no incluye la partida 6109. Según la búsqueda, sin releer: está impugnado ante el Tribunal de Comercio Internacional (CIT), que no había fallado al 19 de noviembre de 2026, y los aranceles IEEPA cayeron el 20 de febrero de 2026."
     },
+    "arancel_china": {
+      "nombre": "Recargos de la Sección 301 si la remera se hace en China",
+      "valor": 0.2,
+      "unidad": "fracción del valor en aduana",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "USITC, Harmonized Tariff Schedule 2026, revisión 23: 9903.88.15, lista 4A, +7,5 % (la nota 20(s) incluye 6109.90.80), y 9903.05.31, trabajo forzoso, +12,5 %",
+      "url": "https://hts.usitc.gov/search?query=9903.88.15",
+      "fecha": "2026-11-20",
+      "nota": "Con el 16 % general, 36 % en total. Sólo cuenta en el escenario “Hecha en China”."
+    },
     "margen_hilado": {
       "nombre": "Ganancia del hilandero (proxy)",
       "valor": 0.12,
@@ -277,7 +299,8 @@
       "bruto": null,
       "operativo": 0.01,
       "nota": "Comercia lana. Según su documento de registro de 2023 tiene la peinaduría de Trelew (Peinaduría Río Chubut) como negocio conjunto, que no consolida; los años siguientes no se revisaron.",
-      "url": "https://echanges.dila.gouv.fr/OPENDATA/AMF/ECO/2026/03/FCECO081285_20260319.pdf"
+      "url": "https://echanges.dila.gouv.fr/OPENDATA/AMF/ECO/2026/03/FCECO081285_20260319.pdf",
+      "releido": false
     },
     {
       "etapa": "Peinado",
@@ -286,7 +309,8 @@
       "bruto": 0.0719,
       "operativo": null,
       "nota": "Sin margen operativo por línea.",
-      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf"
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf",
+      "releido": false
     },
     {
       "etapa": "Hilado",
@@ -295,7 +319,8 @@
       "bruto": 0.274,
       "operativo": 0.12,
       "nota": "Margen bruto del hilado peinado; el operativo es de toda la empresa y sale después de gastos financieros.",
-      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf"
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf",
+      "releido": false
     },
     {
       "etapa": "Tela",
@@ -304,7 +329,8 @@
       "bruto": 0.3298,
       "operativo": 0.079,
       "nota": "Margen bruto de la tela peinada; tela plana para sastrería, no de punto.",
-      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-04-16/ea67a89e-45fb-425d-913d-b162161a0864.PDF"
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-04-16/ea67a89e-45fb-425d-913d-b162161a0864.PDF",
+      "releido": false
     },
     {
       "etapa": "Tela y prenda",
@@ -313,7 +339,8 @@
       "bruto": 0.286,
       "operativo": 0.187,
       "nota": "Tela de punto (34 % de las ventas) y prendas (66 %), sobre todo sintéticas.",
-      "url": "https://eclatglobal.s3.amazonaws.com/uploads/2026/05/2025_eclat_Annual-Report_en.pdf"
+      "url": "https://eclatglobal.s3.amazonaws.com/uploads/2026/05/2025_eclat_Annual-Report_en.pdf",
+      "releido": false
     },
     {
       "etapa": "Confección",
@@ -322,7 +349,8 @@
       "bruto": 0.263,
       "operativo": 0.188,
       "nota": "Teje y confecciona; el operativo es bruto menos gastos de venta y administración.",
-      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033000295.pdf"
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033000295.pdf",
+      "releido": false
     },
     {
       "etapa": "Confección",
@@ -331,7 +359,8 @@
       "bruto": null,
       "operativo": 0.08,
       "nota": "Finanzas y ganancia sobre el FOB; ganancia neta 3 %; salarios 12 %.",
-      "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf"
+      "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf",
+      "releido": false
     },
     {
       "etapa": "Marca",
@@ -340,7 +369,8 @@
       "bruto": 0.548,
       "operativo": 0.06,
       "nota": "Dueña de Smartwool. 44 % de las ventas es directo al público; la publicidad es 9 % de las ventas.",
-      "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm"
+      "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm",
+      "releido": false
     },
     {
       "etapa": "Marca",
@@ -349,7 +379,8 @@
       "bruto": 0.544,
       "operativo": 0.147,
       "nota": "The North Face y Timberland; Smartwool está en “All Other”, que no publica margen bruto.",
-      "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm"
+      "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm",
+      "releido": false
     },
     {
       "etapa": "Marca y tienda",
@@ -358,7 +389,8 @@
       "bruto": 0.767,
       "operativo": 0.39,
       "nota": "Antes de 447,0 M de gastos corporativos; la empresa entera gana 5,8 %.",
-      "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm"
+      "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm",
+      "releido": true
     },
     {
       "etapa": "Tienda",
@@ -367,7 +399,8 @@
       "bruto": 0.431,
       "operativo": -0.014,
       "nota": "Cadena de tiendas de montaña; el alquiler va fuera del costo de mercadería.",
-      "url": "https://public.cloud-dam.rei.com/api/public/content/25671793_rei-fy25-issued-financial-statements-2.pdf"
+      "url": "https://public.cloud-dam.rei.com/api/public/content/25671793_rei-fy25-issued-financial-statements-2.pdf",
+      "releido": false
     }
   ]
 }
