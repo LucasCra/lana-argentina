@@ -470,6 +470,7 @@ h2::before {
 h3 { font-size: 15px; margin: 0 0 6px; font-weight: 650; letter-spacing: -0.01em; }
 .lede { color: var(--ink-2); margin: 0 0 20px; max-width: 80ch; font-size: 15.5px; }
 .note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+.note code { overflow-wrap: anywhere; }
 
 .card {
   position: relative;
