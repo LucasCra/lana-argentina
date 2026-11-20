@@ -18,6 +18,9 @@ cuánto agrega por kilo y qué hay hoy. Mira sólo la cadena; comercio, impuesto
 
 Abrí `site/index.html` en el navegador. No necesita servidor ni internet.
 
+También está publicado en <https://lucascra.github.io/lana-argentina/> (GitHub Pages sirve la rama `main`; el
+`index.html` de la raíz lleva a `site/`, y `.nojekyll` evita que Pages procese los archivos).
+
 ## Actualizar con un informe nuevo
 
 ```bash
