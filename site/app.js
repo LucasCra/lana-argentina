@@ -1227,6 +1227,7 @@
       b.addEventListener("click", () => {
         season = b.dataset.s;
         renderSeasonSeg();
+        seg.querySelector('[aria-checked="true"]').focus(); // el selector se vuelve a dibujar: sin esto el teclado pierde el foco
         renderSeasonal();
       }),
     );

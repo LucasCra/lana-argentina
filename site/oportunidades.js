@@ -1054,6 +1054,7 @@
       b.addEventListener("click", () => {
         finSeason = FIN[Number(b.dataset.i)];
         renderSeg();
+        seg.querySelector('[aria-checked="true"]').focus(); // el selector se vuelve a dibujar: sin esto el teclado pierde el foco
         render("finura");
       }),
     );
