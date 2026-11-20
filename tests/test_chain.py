@@ -24,6 +24,7 @@ def _monthly():
             "hasta": until,
             "toneladas": {"peinada": tons},
             "ingresos": {"peinada": usd},
+            "finura": {"peinada": {"fina": tons * 0.7, "total": tons}},
         }
 
     return {
@@ -69,6 +70,7 @@ def test_tops_price_is_fla_dollars_over_clean_kilos(chain):
     tops = chain["peinada"]
     assert tops["cerrada"]["usd_kg"] == pytest.approx(10.0)
     assert tops["actual"]["usd_kg"] == pytest.approx(12.0)
+    assert tops["cerrada"]["fina_pct"] == pytest.approx(0.7)
     assert tops["actual"]["provisionales"] == ["2026-08"]
     assert tops["mismos_meses"] == {"meses": ["2026-06", "2026-07"], "usd_kg": pytest.approx(12.0)}
     first = _stages(chain)["peinada"]

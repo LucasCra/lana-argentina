@@ -55,6 +55,11 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const monthName = (ym) => `${MONTHS[Number(ym.slice(5, 7)) - 1]} de ${ym.slice(0, 4)}`;
+  // "junio y julio de 2026" when the months share a year.
+  const monthList = (yms) =>
+    new Set(yms.map((m) => m.slice(0, 4))).size === 1
+      ? `${yms.map((m) => MONTHS[Number(m.slice(5, 7)) - 1]).join(" y ")} de ${yms[0].slice(0, 4)}`
+      : yms.map(monthName).join(" y ");
   const longDate = (iso) =>
     new Date(`${iso}T12:00:00`).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
   const link = (url, text) => `<a href="${esc(url)}" rel="noopener">${esc(text)}</a>`;
@@ -455,10 +460,14 @@
     document.getElementById("cascada-lede").innerHTML =
       `El punto de partida es el pedido: la lana entra a la cadena al precio al que Argentina exportó lana peinada en ${tops.cerrada.temporada}, ` +
       `${perKg(tops.cerrada.usd_kg)} limpio y FOB (${num(tops.cerrada.t)} t por ${num(tops.cerrada.usd / 1e6, 1)} millones de dólares, informe EL ${tops.cerrada.numero}). ` +
-      `De ahí se hila con un alma de nailon, se teje, se tiñe y se cose en ${esc(D.producto.origen)}, viaja a EE. UU., paga arancel y se vende en la tienda propia de la marca a ${usd(price)}. ` +
-      `<strong>Ojo con la finura:</strong> la peinada argentina promedia unas 23 micras y una remera para usar sobre la piel lleva lana más fina. ` +
-      `En ${same.meses.map(monthName).join(" y ")} la peinada argentina valió ${perKg(same.usd_kg)} y la australiana de 18,5 micras, ${perKg(f.usd_kg)} en Italia ` +
-      `(${num(f.usd_kg / same.usd_kg, 1)} veces más). Con esa lana, la remera lleva ${usd(SC.peinada_fina.peinada_usd)} de lana.`;
+      `De ahí se hila con un alma de nailon, se teje y se tiñe (la marca no dice dónde), se confecciona en ${esc(D.producto.origen)}, viaja a EE. UU., paga arancel y se vende en la tienda propia de la marca a ${usd(price)}. ` +
+      `<strong>Ojo con la finura:</strong> la FLA clasifica como fina (hasta 24,5 micras) el ${pct(tops.cerrada.fina_pct)} de la peinada exportada en ${tops.cerrada.temporada} y no publica precios por micronaje; ` +
+      `una remera para usar sobre la piel lleva lana más fina (Icebreaker declara 18,9 micras para la suya). ` +
+      `En ${monthList(same.meses)} la peinada argentina valió ${perKg(same.usd_kg)}; la australiana de 18,5 micras, ${perKg(f.usd_kg)} en Italia, ` +
+      `${num(f.usd_kg / same.usd_kg, 1)} veces ese precio. Con esa lana, la remera lleva ${usd(SC.peinada_fina.peinada_usd)} de lana.`;
+    document.getElementById("nota-finura").innerHTML =
+      `<strong>La finura.</strong> La FLA no publica el precio de la peinada por micronaje. El ${pct(tops.cerrada.fina_pct)} de la exportada en ${tops.cerrada.temporada} es fina (hasta 24,5 micras), ` +
+      `pero una remera para usar sobre la piel lleva lana más fina. La cuenta usa el precio promedio porque es el punto de partida pedido; el escenario de peinada fina muestra cuánto cambia.`;
 
     document.getElementById("kilos-lede").textContent =
       `Una remera de ${grams(M.prenda_g)} tiene ${grams(M.lana_prenda_g)} de lana. Para llegar a ella hace falta comprar ${grams(M.peinada_g)} de peinada: ` +
@@ -518,16 +527,16 @@
     const notes = [
       `<strong>Peinada argentina, ${usd(S.peinada.vende_usd)}.</strong> Es lo que cobra Argentina por la lana ya lavada y peinada, puesta en el barco: ` +
         `el precio del productor por la lana sucia más el lavado y el peinado (la prima del peinado está en ${link("industria.html#valor", "la página de industria")}). ` +
-        `Las peinadurías ganan poco: el negocio lanero de Chargeurs, socio de la peinaduría de Trelew, ${ref("Chargeurs, segmento Luxury Fibers", "1,0 % de sus ventas en 2025")}; ` +
-        `la línea de peinada de Xinao, ${ref("Xinao, línea de peinada", "7,2 % de margen bruto")}.`,
+        `Como referencia de ganancia, el segmento lanero de Chargeurs, que comercia lana, ganó ${ref("Chargeurs, segmento Luxury Fibers", "1,0 % de sus ventas en 2025")}; ` +
+        `según su documento de 2023, Chargeurs tiene la peinaduría de Trelew como negocio conjunto, sin consolidarla. La línea de peinada de Xinao tuvo ${ref("Xinao, línea de peinada", "7,2 % de margen bruto")}.`,
       `<strong>Hilado, ${usd(S.hilado.agrega_usd)}.</strong> El hilandero compra ${grams(M.peinada_g)} de peinada y ${grams(M.nailon_g)} de nailon, pierde ` +
         `${grams(S.hilado.merma_g)} de fibra y entrega ${grams(M.hilado_g)} de hilado, que vale ${perKg(S.hilado.usd_kg)}. ` +
-        `Paga energía, mano de obra, el alma de nailon y el viaje de la peinada a Asia. Ganancia supuesta: ${pct(S.hilado.margen, 1)} de lo que vende (Xinao).`,
+        `Paga energía, mano de obra, el alma de nailon y el viaje de la peinada hasta la hilandería. Ganancia supuesta: ${pct(S.hilado.margen, 1)} de lo que vende (Xinao).`,
       `<strong>Tela, ${usd(S.tela.agrega_usd)}.</strong> Tejido de punto, teñido, terminación y avíos (etiquetas, hilo de coser). Es la etapa de fábrica que más agrega y la menos segura: ` +
         `la hoja de costos de una marca equivale a ${perKg(D.tela_hoja_usd_kg, 0)} de tela de lana fina; los avisos de fábricas chinas piden desde ${perKg(P.tela_catalogo_usd_kg.valor, 0)}, sin decir el micronaje. ` +
         `Ganancia supuesta: ${pct(S.tela.margen, 1)} (Nanshan, tela peinada).`,
       `<strong>Confección, ${usd(S.confeccion.agrega_usd)}.</strong> Corte, costura, terminación y embalaje en ${esc(D.producto.origen)}; al cortar se pierden ${grams(S.confeccion.merma_g)} de tela. ` +
-        `Ganancia supuesta: ${pct(S.confeccion.margen)} del precio de fábrica, como en la remera de Bangladesh que desarma Public Eye, donde los salarios son 12 % de ese precio.`,
+        `Ganancia supuesta: ${pct(S.confeccion.margen)} del precio de fábrica, lo que Public Eye anota como finanzas y ganancia en una remera básica de Bangladesh (la ganancia neta es 3 % y los salarios, 12 %).`,
       `<strong>Flete y arancel, ${usd(S.importacion.agrega_usd)}.</strong> Flete y seguro, ${usd(part(S.importacion, "flete"))} (supuesto). ` +
         `Arancel, ${usd(part(S.importacion, "arancel"))}: EE. UU. lo cobra sobre el precio pagado a la fábrica, sin el flete internacional. Lo cobra el Estado; no es ganancia de nadie en la cadena.`,
       `<strong>Marca y tienda, ${usd(shop.agrega_usd)}.</strong> Lo que queda entre la remera puesta en EE. UU. (${usd(shop.compra_usd)}) y el precio. ` +
@@ -564,7 +573,7 @@
   function renderAssumptions() {
     const fla = `<tr><td class="name-cell">Peinada argentina, ${esc(tops.cerrada.temporada)}</td><td class="value-cell">${perKg(tops.cerrada.usd_kg)}</td><td>–</td><td><span class="tag">FLA</span></td><td>build</td>` +
       `<td class="source-cell">Ingresos sobre toneladas limpias de peinada del informe EL ${tops.cerrada.numero}. ${esc(tops.actual.temporada)} hasta ${monthName(tops.actual.hasta)}: ${perKg(tops.actual.usd_kg)}` +
-      `${tops.actual.provisionales.length ? ` (${tops.actual.provisionales.map(monthName).join(" y ")}, provisorios)` : ""}.</td></tr>`;
+      `${tops.actual.provisionales.length ? ` (${monthList(tops.actual.provisionales)}, provisorios)` : ""}.</td></tr>`;
     const rows = Object.entries(P).map(([key, p]) => {
       const note = p.nota ? ` ${esc(p.nota)}` : "";
       return (
@@ -593,7 +602,8 @@
         `La remera de lana fina puesta en EE. UU. cuesta aquí ${usd(fineLanded)} (${share(fineLanded)}); con la suma de avisos, aun con peinada fina, quedaría muy por debajo ` +
         `(con peinada argentina, ${usd(SC.fabrica_bajo.fob_usd + SC.fabrica_bajo.importacion_usd)}). Por eso los avisos quedan como piso.`,
       `<strong>Arancel.</strong> Partida 6109.90.80 del arancel de EE. UU. (remeras de punto de lana de manga corta), ${pct(D.arancel.nmf)}, más ${pct(D.arancel.s301, 1)} de la Sección 301 para productos de Vietnam desde el 24 de julio de 2026. ` +
-        `Se cobra sobre el precio pagado a la fábrica. El recargo está impugnado; el escenario “sin el recargo” muestra el caso.`,
+        `Se cobra sobre el precio pagado a la fábrica, sin el flete ni el seguro internacionales (${link("https://www.law.cornell.edu/uscode/text/19/1401a", "19 U.S.C. § 1401a(b)(4)(A)")}). ` +
+        `El recargo está impugnado; el escenario “sin el recargo” muestra el caso.`,
       `<strong>Ganancia y costos.</strong> En el hilado, la tela y la confección, la ganancia es el margen operativo de una empresa cotizada de la etapa por lo que vende la etapa; en la marca y la tienda, lo que queda después de los gastos de tienda y de marca. ` +
         `Son promedios de empresas enteras, con otras fibras y otros clientes: indican el orden de magnitud, no la cuenta de esta remera.`,
       `<strong>Monedas.</strong> Euros y yuanes a dólares con el promedio mensual o anual del Banco Central Europeo. Dólares corrientes.`,

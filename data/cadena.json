@@ -26,7 +26,10 @@
     },
     "precios_oferta_usd": {
       "nombre": "Precios de oferta en la misma ficha",
-      "valor": [66.5, 48.0],
+      "valor": [
+        66.5,
+        48.0
+      ],
       "unidad": "USD",
       "tipo": "fuente",
       "releido": true,
@@ -99,8 +102,16 @@
     "peinada_fina": {
       "nombre": "Peinada fina australiana de 18,5 µ (referencia para una remera de piel)",
       "valor": [
-        { "fecha": "2026-06-19", "eur_kg": 19.31, "usd_eur": 1.1518 },
-        { "fecha": "2026-07-03", "eur_kg": 18.73, "usd_eur": 1.1417478260869562 }
+        {
+          "fecha": "2026-06-19",
+          "eur_kg": 19.31,
+          "usd_eur": 1.1518
+        },
+        {
+          "fecha": "2026-07-03",
+          "eur_kg": 18.73,
+          "usd_eur": 1.1417478260869562
+        }
       ],
       "unidad": "EUR/kg y USD por EUR",
       "tipo": "fuente",
@@ -130,7 +141,7 @@
       "fuente": "Quince, ficha de su remera de manga corta 100 % merino: “Materials $11.62”",
       "url": "https://www.quince.com/men/tech-merino-short-sleeve-tee",
       "fecha": "2026-11-19",
-      "nota": "Es la única hoja de costos por prenda de una remera de merino que se encontró. Quince no publica peso, gramaje, micronaje ni país; dice que usa merino australiano extrafino."
+      "nota": "Es la única hoja de costos por prenda de una remera de merino que se encontró. La ficha no publica peso, gramaje, micronaje ni país; según la búsqueda, Quince dice usar merino australiano extrafino."
     },
     "confeccion_usd": {
       "nombre": "Confección (corte, costura y terminación)",
@@ -196,7 +207,7 @@
       "fuente": "USITC, Harmonized Tariff Schedule 2026, revisión 23: 6109.90.80 “Other”, general 16%",
       "url": "https://hts.usitc.gov/search?query=6109.90.80",
       "fecha": "2026-11-19",
-      "nota": "Las de manga larga van por 6109.90.15, al 5,6 %. Vietnam no tiene preferencia."
+      "nota": "Se cobra sobre el precio pagado a la fábrica, sin el flete ni el seguro internacionales (19 U.S.C. § 1401a(b)(4)(A), releído). Las de manga larga van por 6109.90.15, al 5,6 %. Vietnam no tiene preferencia."
     },
     "arancel_301": {
       "nombre": "Recargo de la Sección 301 a productos de Vietnam (trabajo forzoso)",
@@ -207,7 +218,7 @@
       "fuente": "USTR, 91 FR 47318 (28 de julio de 2026): 12,5 % a productos de Vietnam desde el 24 de julio de 2026, sumado al arancel general",
       "url": "https://www.federalregister.gov/documents/2026/07/28/2026-15181/notice-of-actions-in-section-301-investigations-of-acts-policies-and-practices-of-various-economies",
       "fecha": "2026-07-28",
-      "nota": "El anexo de exenciones no incluye la partida 6109. Está impugnado ante el Tribunal de Comercio Internacional (CIT), que no había fallado al 19 de noviembre de 2026. Los aranceles IEEPA cayeron el 20 de febrero de 2026."
+      "nota": "El anexo de exenciones no incluye la partida 6109. Según la búsqueda, sin releer: está impugnado ante el Tribunal de Comercio Internacional (CIT), que no había fallado al 19 de noviembre de 2026, y los aranceles IEEPA cayeron el 20 de febrero de 2026."
     },
     "margen_hilado": {
       "nombre": "Ganancia del hilandero (proxy)",
@@ -236,9 +247,9 @@
       "unidad": "fracción del precio FOB",
       "tipo": "inferencia",
       "releido": false,
-      "fuente": "Public Eye y Clean Clothes Campaign, “Squeezed Dry”, mayo de 2026: en una remera básica de Bangladesh, finanzas y ganancia son 8 % del FOB (ganancia neta, 3 %)",
+      "fuente": "Public Eye y Clean Clothes Campaign, “Squeezed Dry”, mayo de 2026: en una remera básica de Bangladesh, finanzas y ganancia son 8 % del FOB (la ganancia neta, 3 %)",
       "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf",
-      "fecha": "2026-05-01",
+      "fecha": "2026-05",
       "nota": "Remera de algodón. Shenzhou, que teje y confecciona, gana cerca de 18,8 % sobre ventas."
     },
     "tienda_canada_goose": {
@@ -254,21 +265,109 @@
       "releido": true,
       "fuente": "Canada Goose, Form 20-F del ejercicio cerrado el 29 de marzo de 2026: segmento DTC (tiendas propias y web) con 76,7 % de margen bruto y 39,0 % de margen operativo; gastos corporativos 447,0 M sobre ventas de 1.528,2 M",
       "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm",
-      "fecha": "2026-05-20",
+      "fecha": "2026-05-14",
       "nota": "VF no publica cifras de Smartwool. Canada Goose es la marca cotizada encontrada que separa la venta directa y sus gastos centrales."
     }
   },
   "comparables": [
-    { "etapa": "Peinado", "empresa": "Chargeurs, segmento Luxury Fibers", "anio": "2025", "bruto": null, "operativo": 0.01, "nota": "Comercia lana y participa en la peinaduría de Trelew (Peinaduría Río Chubut) como negocio conjunto.", "url": "https://echanges.dila.gouv.fr/OPENDATA/AMF/ECO/2026/03/FCECO081285_20260319.pdf" },
-    { "etapa": "Peinado", "empresa": "Xinao, línea de peinada", "anio": "2025", "bruto": 0.0719, "operativo": null, "nota": "Sin margen operativo por línea.", "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf" },
-    { "etapa": "Hilado", "empresa": "Xinao (toda la empresa)", "anio": "2025", "bruto": 0.274, "operativo": 0.12, "nota": "Margen bruto del hilado peinado; el operativo es de toda la empresa y sale después de gastos financieros.", "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf" },
-    { "etapa": "Tela", "empresa": "Nanshan Zhishang (toda la empresa)", "anio": "2025", "bruto": 0.3298, "operativo": 0.079, "nota": "Margen bruto de la tela peinada; tela plana para sastrería, no de punto.", "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-04-16/ea67a89e-45fb-425d-913d-b162161a0864.PDF" },
-    { "etapa": "Tela y prenda", "empresa": "Eclat Textile", "anio": "2025", "bruto": 0.286, "operativo": 0.187, "nota": "Tela de punto (34 % de las ventas) y prendas (66 %), sobre todo sintéticas.", "url": "https://eclatglobal.s3.amazonaws.com/uploads/2026/05/2025_eclat_Annual-Report_en.pdf" },
-    { "etapa": "Confección", "empresa": "Shenzhou International", "anio": "2025", "bruto": 0.263, "operativo": 0.188, "nota": "Teje y confecciona; el operativo es bruto menos gastos de venta y administración.", "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033000295.pdf" },
-    { "etapa": "Confección", "empresa": "Remera básica de Bangladesh (Public Eye)", "anio": "2026", "bruto": null, "operativo": 0.08, "nota": "Finanzas y ganancia sobre el FOB; ganancia neta 3 %; salarios 12 %.", "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf" },
-    { "etapa": "Marca", "empresa": "VF Corporation (toda la empresa)", "anio": "ejercicio 2026", "bruto": 0.548, "operativo": 0.06, "nota": "Dueña de Smartwool. 44 % de las ventas es directo al público; la publicidad es 9 % de las ventas.", "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm" },
-    { "etapa": "Marca", "empresa": "VF, segmento Outdoor", "anio": "ejercicio 2026", "bruto": 0.544, "operativo": 0.147, "nota": "The North Face y Timberland; Smartwool está en “All Other”, que no publica margen bruto.", "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm" },
-    { "etapa": "Marca y tienda", "empresa": "Canada Goose, venta directa", "anio": "ejercicio 2026", "bruto": 0.767, "operativo": 0.39, "nota": "Antes de 447,0 M de gastos corporativos; la empresa entera gana 5,8 %.", "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm" },
-    { "etapa": "Tienda", "empresa": "REI", "anio": "2025", "bruto": 0.431, "operativo": -0.014, "nota": "Cadena de tiendas de montaña; el alquiler va fuera del costo de mercadería.", "url": "https://public.cloud-dam.rei.com/api/public/content/25671793_rei-fy25-issued-financial-statements-2.pdf" }
+    {
+      "etapa": "Peinado",
+      "empresa": "Chargeurs, segmento Luxury Fibers",
+      "anio": "2025",
+      "bruto": null,
+      "operativo": 0.01,
+      "nota": "Comercia lana. Según su documento de registro de 2023 tiene la peinaduría de Trelew (Peinaduría Río Chubut) como negocio conjunto, que no consolida; los años siguientes no se revisaron.",
+      "url": "https://echanges.dila.gouv.fr/OPENDATA/AMF/ECO/2026/03/FCECO081285_20260319.pdf"
+    },
+    {
+      "etapa": "Peinado",
+      "empresa": "Xinao, línea de peinada",
+      "anio": "2025",
+      "bruto": 0.0719,
+      "operativo": null,
+      "nota": "Sin margen operativo por línea.",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf"
+    },
+    {
+      "etapa": "Hilado",
+      "empresa": "Xinao (toda la empresa)",
+      "anio": "2025",
+      "bruto": 0.274,
+      "operativo": 0.12,
+      "nota": "Margen bruto del hilado peinado; el operativo es de toda la empresa y sale después de gastos financieros.",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf"
+    },
+    {
+      "etapa": "Tela",
+      "empresa": "Nanshan Zhishang (toda la empresa)",
+      "anio": "2025",
+      "bruto": 0.3298,
+      "operativo": 0.079,
+      "nota": "Margen bruto de la tela peinada; tela plana para sastrería, no de punto.",
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-04-16/ea67a89e-45fb-425d-913d-b162161a0864.PDF"
+    },
+    {
+      "etapa": "Tela y prenda",
+      "empresa": "Eclat Textile",
+      "anio": "2025",
+      "bruto": 0.286,
+      "operativo": 0.187,
+      "nota": "Tela de punto (34 % de las ventas) y prendas (66 %), sobre todo sintéticas.",
+      "url": "https://eclatglobal.s3.amazonaws.com/uploads/2026/05/2025_eclat_Annual-Report_en.pdf"
+    },
+    {
+      "etapa": "Confección",
+      "empresa": "Shenzhou International",
+      "anio": "2025",
+      "bruto": 0.263,
+      "operativo": 0.188,
+      "nota": "Teje y confecciona; el operativo es bruto menos gastos de venta y administración.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033000295.pdf"
+    },
+    {
+      "etapa": "Confección",
+      "empresa": "Remera básica de Bangladesh (Public Eye)",
+      "anio": "2026",
+      "bruto": null,
+      "operativo": 0.08,
+      "nota": "Finanzas y ganancia sobre el FOB; ganancia neta 3 %; salarios 12 %.",
+      "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf"
+    },
+    {
+      "etapa": "Marca",
+      "empresa": "VF Corporation (toda la empresa)",
+      "anio": "ejercicio 2026",
+      "bruto": 0.548,
+      "operativo": 0.06,
+      "nota": "Dueña de Smartwool. 44 % de las ventas es directo al público; la publicidad es 9 % de las ventas.",
+      "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm"
+    },
+    {
+      "etapa": "Marca",
+      "empresa": "VF, segmento Outdoor",
+      "anio": "ejercicio 2026",
+      "bruto": 0.544,
+      "operativo": 0.147,
+      "nota": "The North Face y Timberland; Smartwool está en “All Other”, que no publica margen bruto.",
+      "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm"
+    },
+    {
+      "etapa": "Marca y tienda",
+      "empresa": "Canada Goose, venta directa",
+      "anio": "ejercicio 2026",
+      "bruto": 0.767,
+      "operativo": 0.39,
+      "nota": "Antes de 447,0 M de gastos corporativos; la empresa entera gana 5,8 %.",
+      "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm"
+    },
+    {
+      "etapa": "Tienda",
+      "empresa": "REI",
+      "anio": "2025",
+      "bruto": 0.431,
+      "operativo": -0.014,
+      "nota": "Cadena de tiendas de montaña; el alquiler va fuera del costo de mercadería.",
+      "url": "https://public.cloud-dam.rei.com/api/public/content/25671793_rei-fy25-issued-financial-statements-2.pdf"
+    }
   ]
 }

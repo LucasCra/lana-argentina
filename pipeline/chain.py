@@ -12,8 +12,9 @@ How the chain is built, per shirt:
   bought (spinning loss). The spinner also buys the nylon core, so its cost
   stays inside the spinning stage.
 - Raw material. Tops at FLA's export price (USD per clean kg, FOB) for the
-  latest complete season. Argentine tops average about 23 µ; a next-to-skin
-  tee uses finer wool, which the fine-tops scenario prices.
+  latest complete season. FLA classes most Argentine tops as fine (up to
+  24.5 µ) but prints no price by micron; a next-to-skin tee uses finer wool,
+  which the fine-tops scenario prices.
 - Factory stages. The one published per-garment cost sheet for a merino tee
   (Quince: materials, crafting, packaging) anchors the factory-gate price, so
   the anchor is a fine-wool tee. With Argentine tops every stage from yarn on
@@ -180,6 +181,7 @@ def _fla_tops(monthly: dict[str, Any], quote_months: list[str]) -> dict[str, Any
             "t": closed["toneladas"]["peinada"],
             "usd": closed["ingresos"]["peinada"],
             "usd_kg": price(closed["toneladas"]["peinada"], closed["ingresos"]["peinada"]),
+            "fina_pct": closed["finura"]["peinada"]["fina"] / closed["finura"]["peinada"]["total"],
         },
         "actual": {
             "temporada": current["temporada"],
