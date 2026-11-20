@@ -9,7 +9,7 @@ from pipeline.parse import ReportError
 
 
 def _row(low, high, **tons):
-    return {"desde": low, "hasta": high, **tons}
+    return {"desde": low, "hasta": high, "rango": f"{low} {high}", **tons}
 
 
 def _season(name, complete, scale=1.0):
@@ -35,8 +35,31 @@ def _season(name, complete, scale=1.0):
     }
 
 
-def _monthly():
-    return {"temporadas": [_season("2026/27", False, 0.5), _season("2025/26", True)]}
+def _monthly(adjusted=False):
+    """Two seasons; with `adjusted`, the closed one books an annual adjustment in June."""
+
+    def block(months, greasy, tops):
+        return {
+            "temporada": "2025/26",
+            "meses": months,
+            "toneladas": {"sucia": greasy[0], "peinada": tops[0]},
+            "ingresos": {"sucia": greasy[1], "peinada": tops[1]},
+        }
+
+    return {
+        "temporadas": [_season("2026/27", False, 0.5), _season("2025/26", True)],
+        "meses": [
+            {"mes": "2026-05", "temporada": "2025/26", "ajuste_anual": False},
+            {"mes": "2026-06", "temporada": "2025/26", "ajuste_anual": adjusted},
+        ],
+        "bloques": [
+            block(["2025-07", "2026-05"], (100.0, 700_000.0), (100.0, 1_000_000.0)),  # 7 and 10
+            {
+                **block(["2026-06"], (100.0, 300_000.0), (10.0, 100_000.0)),  # cheap greasy
+                "micrones": {"18.5 18.9": 12.0, "30.0 30.9": 80.0},
+            },
+        ],
+    }
 
 
 def _history():
@@ -147,4 +170,26 @@ def test_a_row_across_a_band_edge_stops_the_build():
     monthly["temporadas"][1]["micrones"].append(_row(18.5, 19.4, sucia=1.0))
     monthly["temporadas"][1]["toneladas"]["sucia"] += 1.0
     with pytest.raises(ReportError, match="straddles"):
+        derive_opportunities(monthly, _history(), _chain())
+
+
+def test_combing_gap_leaves_out_the_annual_adjustment():
+    plain = derive_opportunities(_monthly(), _history(), _chain())
+    assert next(g for g in plain["brecha"] if g["temporada"] == "2025/26")["sin_ajuste"] is None
+    out = derive_opportunities(_monthly(adjusted=True), _history(), _chain())
+    gap = next(g for g in out["brecha"] if g["temporada"] == "2025/26")
+    assert gap["usd_kg"] == 4.0  # season prices, June included
+    assert gap["sin_ajuste"]["usd_kg"] == pytest.approx(3.0)  # 10 - 7 from the other blocks
+    assert gap["sin_ajuste"]["meses_fuera"] == ["2026-06"]
+    comb = out["oportunidades"][0]["bases"][0]
+    assert comb["usd_kg"] == pytest.approx(3.0)
+    bands = {b["id"]: b for b in out["finura"][0]["bandas"]}
+    assert (bands["superfina"]["ajuste_t"], bands["gruesa"]["ajuste_t"]) == (12.0, 80.0)
+    assert plain["finura"][0]["bandas"][0]["ajuste_t"] is None
+
+
+def test_an_adjustment_inside_a_longer_block_stops_the_build():
+    monthly = _monthly(adjusted=True)
+    monthly["bloques"][1]["meses"] = ["2026-05", "2026-06"]
+    with pytest.raises(ReportError, match="adjustment month"):
         derive_opportunities(monthly, _history(), _chain())

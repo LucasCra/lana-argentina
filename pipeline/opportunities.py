@@ -15,7 +15,12 @@ this module adds only the arithmetic that joins them.
   a band or the rows do not add up to the season's tons of a product.
 - `brecha`: per monthly season, tops minus greasy USD per clean kilo. It pays
   scouring, combing and the noils lost on the way, and it mixes fineness: it
-  is the sales a kilo gains by being combed here, not a combing margin.
+  is the sales a kilo gains by being combed here, not a combing margin. A
+  season whose June carries FLA's annual adjustment for non-member exporters
+  (a year of mostly cheap greasy wool booked in one month) also gets
+  `sin_ajuste`: the same gap from the report blocks without that month. The
+  combing opportunity uses it when present, since the adjustment's wool is
+  not like the rest.
 - `tramos`: the tee of cadena.html per kilo of the tops it uses: what each stage
   adds, how much of that is profit, and the share of the retail price that
   stays in a country the tee leaves at that stage. Duty and freight are marked
@@ -62,14 +67,17 @@ COMPARABLES = {
 }
 # Opportunity -> the tee stage whose value added it takes (combing uses `brecha`).
 STAGE = {"hilar": "hilado", "tejer": "tela", "confeccionar": "confeccion", "vender": "tienda"}
+# A season's report blocks without, and only with, its annual-adjustment month.
+Split = tuple[list[dict[str, Any]], list[dict[str, Any]]]
 
 
 def derive_opportunities(
     monthly: dict[str, Any], history: dict[str, Any], chain: dict[str, Any]
 ) -> dict[str, Any]:
     seasons = sorted(monthly["temporadas"], key=lambda s: s["temporada"])
-    finura = [_fineness(s) for s in seasons]
-    brecha = [_gap(s) for s in seasons]
+    splits = {s["temporada"]: _split_adjustment(s["temporada"], monthly) for s in seasons}
+    finura = [_fineness(s, splits[s["temporada"]]) for s in seasons]
+    brecha = [_gap(s, splits[s["temporada"]]) for s in seasons]
     tramos = _stages(chain)
     closed = max((s for s in finura if s["completa"]), key=lambda s: s["temporada"])
     current = finura[-1]
@@ -82,8 +90,9 @@ def derive_opportunities(
         for s in bases:
             tee = _band_tons(s, TEE_MICRON)
             if key == "peinar":
+                gap = gaps[s["temporada"]]
                 tons = sum(tee[p] for p in UNCOMBED)
-                per_kg, profit_kg = gaps[s["temporada"]]["usd_kg"], None
+                per_kg, profit_kg = (gap["sin_ajuste"] or gap)["usd_kg"], None
             else:
                 stage = by_stage[STAGE[key]]
                 tons, per_kg, profit_kg = tee["peinada"], stage["agrega_kg"], stage["ganancia_kg"]
@@ -123,8 +132,9 @@ def derive_opportunities(
     }
 
 
-def _fineness(season: dict[str, Any]) -> dict[str, Any]:
+def _fineness(season: dict[str, Any], split: Split | None) -> dict[str, Any]:
     rows = [r for r in season["micrones"] if any(r.get(p) for p in PRODUCTS)]
+    adjustment = split[1] if split else None
     bands = []
     used = 0
     for key, low, high in BANDS:
@@ -139,6 +149,11 @@ def _fineness(season: dict[str, Any]) -> dict[str, Any]:
                 "hasta": high,
                 "t": tons,
                 "sin_peinar_pct": sum(tons[p] for p in UNCOMBED) / fibre if fibre else None,
+                # Tons of all products the adjustment month added to the band; FLA's
+                # blocks print microns without the split by product.
+                "ajuste_t": None
+                if adjustment is None
+                else sum(b["micrones"].get(r["rango"], 0.0) for b in adjustment for r in inside),
             }
         )
     if used != len(rows):
@@ -173,15 +188,47 @@ def _band_tons(season: dict[str, Any], up_to: float) -> dict[str, float]:
     return {p: sum(b["t"][p] for b in inside) for p in PRODUCTS}
 
 
-def _gap(season: dict[str, Any]) -> dict[str, Any]:
+def _gap(season: dict[str, Any], split: Split | None) -> dict[str, Any]:
     price = season["usd_kg_producto"]
     return {
         "temporada": season["temporada"],
         "completa": season["completa"],
-        "sucia": price["sucia"],
-        "peinada": price["peinada"],
-        "usd_kg": price["peinada"] - price["sucia"],
-        "prima": price["peinada"] / price["sucia"] - 1,
+        **_gap_from(price["sucia"], price["peinada"]),
+        "sin_ajuste": _gap_without_adjustment(*split) if split else None,
+    }
+
+
+def _gap_from(greasy: float, tops: float) -> dict[str, float]:
+    return {"sucia": greasy, "peinada": tops, "usd_kg": tops - greasy, "prima": tops / greasy - 1}
+
+
+def _split_adjustment(name: str, monthly: dict[str, Any]) -> Split | None:
+    """The season's report blocks without and with its annual-adjustment month.
+
+    None when the season has no adjustment. Blocks are differences between consecutive
+    cumulative reports, so the kept blocks add up to the last report before the
+    adjustment; a block that mixes the adjustment month with others cannot be split
+    and stops the build.
+    """
+    adjusted = {m["mes"] for m in monthly["meses"] if m["temporada"] == name and m["ajuste_anual"]}
+    if not adjusted:
+        return None
+    blocks = [b for b in monthly["bloques"] if b["temporada"] == name]
+    mixed = [b for b in blocks if adjusted & set(b["meses"]) and not set(b["meses"]) <= adjusted]
+    if mixed:
+        raise ReportError(f"{name}: the adjustment month shares a report block with other months")
+    kept = [b for b in blocks if not adjusted & set(b["meses"])]
+    return kept, [b for b in blocks if b not in kept]
+
+
+def _gap_without_adjustment(
+    kept: list[dict[str, Any]], adjustment: list[dict[str, Any]]
+) -> dict[str, Any]:
+    tons = {p: sum(b["toneladas"].get(p, 0.0) for b in kept) for p in ("sucia", "peinada")}
+    usd = {p: sum(b["ingresos"].get(p, 0.0) for b in kept) for p in ("sucia", "peinada")}
+    return {
+        **_gap_from(usd["sucia"] / tons["sucia"] / 1000, usd["peinada"] / tons["peinada"] / 1000),
+        "meses_fuera": sorted(m for b in adjustment for m in b["meses"]),
     }
 
 

@@ -29,11 +29,20 @@
   const OP = Object.fromEntries(O.oportunidades.map((o) => [o.id, o]));
   const baseOf = (o, s) => o.bases.find((b) => b.temporada === s.temporada);
   const gapOf = (s) => O.brecha.find((g) => g.temporada === s.temporada);
+  // Brecha del paso 0: sin el mes del ajuste anual de no socios cuando la temporada lo trae.
+  const combGap = (s) => gapOf(s).sin_ajuste ?? gapOf(s);
   const LQ = O.liquidacion;
   const TEE = O.micron_remera;
   const price = K.precio_usd;
   const topsG = K.masas.peinada_g;
   const tops = K.peinada;
+  const fineTee = K.escenarios.find((e) => e.id === "peinada_fina");
+  // Parte sin peinar con todas las finuras, en los mismos meses de la temporada en curso y la anterior.
+  const sameMonths = (() => {
+    const c = D.comparacion;
+    const share = (t) => (t.sucia + t.lavada) / (t.sucia + t.lavada + t.peinada);
+    return { meses: c.meses, etiqueta: c.actual.etiqueta, antes: share(c.anterior.toneladas), ahora: share(c.actual.toneladas) };
+  })();
 
   // Etapas de la FLA en el orden de la cadena y con los colores de historia.js e industria.js;
   // blousse y subproductos van juntos.
@@ -82,6 +91,7 @@
   const uncombed = (b) => b.t.sucia + b.t.lavada;
   const fibre = (b) => b.t.sucia + b.t.lavada + b.t.peinada;
   const byproducts = (b) => b.t.blousse + b.t.subproductos;
+  const bandTotal = (b) => sum(Object.values(b.t));
   const upTo = (s, mic) => s.bandas.filter((b) => b.hasta != null && b.hasta <= mic);
   const teeBand = (s) => upTo(s, TEE);
   const bandShare = (bs) => sum(bs.map(uncombed)) / sum(bs.map(fibre));
@@ -108,9 +118,29 @@
         const parts = [];
         if (c.bruto != null) parts.push(`${pct(c.bruto, 1)} bruto`);
         if (c.operativo != null) parts.push(`${pct(c.operativo, 1)} operativo`);
-        return `${esc(c.empresa)}, ${c.anio}: ${parts.join(", ")}`;
+        return `${esc(c.empresa)}, ${c.anio}: ${parts.join(", ")}${c.releido ? "" : " (sin releer)"}`;
       })
       .join("; ");
+  // Lo que sumarían hilar, tejer y coser la peinada de remera de la última temporada cerrada.
+  const factoryCeiling = () => sum(["hilar", "tejer", "confeccionar"].map((id) => baseOf(OP[id], closedF).techo_usd));
+  // Margen bruto de referencia de un eslabón sobre el de otro, de la tabla de cadena.html.
+  const grossOf = (id) => Math.max(...OP[id].comparables.map((c) => c.bruto ?? 0));
+
+  // Hasta qué año la peinada que Argentina informa a Comtrade coincide con la FLA (como en industria.js).
+  const underReportFrom = (() => {
+    const fla = Object.fromEntries(I.calendario.map((c) => [c.anio, c.peinada_t]));
+    const off = years.find((y) => fla[y.anio] && Math.abs(y.exportaciones.peinada.kg / 1e3 / fla[y.anio] - 1) > 0.05);
+    const lastRatio = fla[lastY.anio] ? lastY.exportaciones.peinada.kg / 1e3 / fla[lastY.anio] : null;
+    return off ? { anio: off.anio, ultimo: lastRatio } : null;
+  })();
+  const yarnCaveat = () =>
+    underReportFrom
+      ? `Ese cero pesa poco: desde ${underReportFrom.anio} Argentina declara a Comtrade menos peinada que la FLA (en ${lastY.anio}, ${pct(underReportFrom.ultimo)}). `
+      : "";
+  // El ajuste anual de exportadores no socios, mes y toneladas por producto, si la temporada lo trae.
+  const adjustment = (season) => D.meses.find((m) => m.temporada === season && m.ajuste_anual) ?? null;
+  const adjustedSeasons = seasons.filter((s) => s.mensual?.some((m) => m.ajuste_anual)).map((s) => s.temporada);
+  const manufMax = seasons.reduce((a, b) => (fT(b, "manuf") > fT(a, "manuf") ? b : a));
 
   // Margen bruto de las empresas de referencia de un eslabón, como rango; el detalle está en las tarjetas.
   const grossRange = (id) => {
@@ -222,9 +252,10 @@
   };
   // Lo que agrega cada paso por kilo de peinada; el peinado sale de la brecha de precios FLA.
   const stepRows = () => {
-    const g = gapOf(closedF);
+    const g = combGap(closedF);
+    const note = gapOf(closedF).sin_ajuste ? ", sin el ajuste de junio" : "";
     return [
-      { label: "Peinar (lavado y peinado)", costos: null, ganancia: null, total: g.usd_kg, src: `FLA ${g.temporada}: peinada menos sucia` },
+      { label: "Peinar (lavado y peinado)", costos: null, ganancia: null, total: g.usd_kg, src: `FLA ${closedF.temporada}: peinada menos sucia${note}` },
       ...["hilado", "tela", "confeccion"].map((id) => ({
         label: { hilado: "Hilar", tela: "Tejer, teñir y terminar", confeccion: "Cortar y coser" }[id],
         costos: ST[id].agrega_kg - ST[id].ganancia_kg,
@@ -285,7 +316,8 @@
       title: "En qué etapa sale la lana",
       sub: () => `Toneladas limpias exportadas por producto, ${first.temporada} a ${last.temporada}`,
       legend: () => FSTAGES.map((k) => ({ label: FNAME[k], color: C[FSLOT[k]] })),
-      foot: "Informes anuales de la FLA. Hilados y tejidos nunca llegan a 50 t: casi no se ven. Hasta 2004/05 las toneladas limpias salen del “equivalente teórico base limpia”.",
+      foot: () =>
+        `Informes anuales de la FLA. Hilados y tejidos llegan como máximo a ${tons(fT(manufMax, "manuf"))} (${manufMax.temporada}): casi no se ven. Hasta 2004/05 las toneladas limpias salen del “equivalente teórico base limpia”.`,
       height: "tall",
       option() {
         const data = stacked(FSTAGES, seasons, fT);
@@ -422,7 +454,7 @@
         { label: "Sin desglose", color: C.s4 },
       ],
       foot: () =>
-        `Hilar, tejer y coser: la remera de cadena.html dividida por los ${num(topsG)} g de peinada que lleva; la ganancia es el margen operativo de una empresa cotizada de cada etapa. Peinar: la diferencia de precio FLA entre peinada y sucia en ${gapOf(closedF).temporada}, que mezcla finuras y no se puede separar en costo y ganancia.`,
+        `Hilar, tejer y coser: la remera de cadena.html dividida por los ${num(topsG)} g de peinada que lleva; la ganancia es el margen operativo de una empresa cotizada de cada etapa. Peinar: la diferencia de precio FLA entre peinada y sucia en ${closedF.temporada}${gapOf(closedF).sin_ajuste ? " sin el mes del ajuste anual de no socios" : ""}, que mezcla finuras y no se puede separar en costo y ganancia.`,
       height: "short",
       option() {
         const rows = stepRows();
@@ -479,7 +511,7 @@
         { label: "Exportado, según Argentina", color: C.s1, line: true },
       ],
       foot: () =>
-        `Los compradores declaran en CIF y peso neto. Desde ${lastYarnYear + 1} Argentina no declara exportaciones de hilado; en los archivos de los compradores casi todo es la partida 5107 (hilado de lana peinada, no acondicionado para la venta al por menor) y el comprador principal es Turquía.`,
+        `Los compradores declaran en CIF y peso neto. Desde ${lastYarnYear + 1} Argentina no declara exportaciones de hilado. ${yarnCaveat()}En los archivos de los compradores casi todo es la partida 5107 (hilado de lana peinada, no acondicionado para la venta al por menor) y el comprador principal es Turquía.`,
       height: "short",
       option() {
         const mirror = years.map((y) => (y.espejo ? y.espejo.hilados.kg / 1e3 : null));
@@ -582,14 +614,13 @@
 
   function renderKpis() {
     const teeC = teeBand(closedF);
-    const teeNow = teeBand(currentF);
     const esp = lastY.espejo;
     document.getElementById("kpis").innerHTML = [
       tile(
         `De una remera de merino de ${num(price)} USD, queda en el país`,
         num(ST.peinada.vende_usd, 2),
         "USD",
-        `${pct(ST.peinada.queda_pct, 1)} del precio: lo que cobra la peinada. Si la remera saliera terminada de una fábrica argentina, quedarían ${usd(ST.confeccion.vende_usd)} (${pct(ST.confeccion.queda_pct, 1)}).`,
+        `${pct(ST.peinada.queda_pct, 1)} del precio, con la peinada al promedio argentino; con peinada fina de 18,5 µ al precio australiano, ${usd(fineTee.peinada_usd)} (${pct(fineTee.peinada_usd / price, 1)}). Si la remera saliera terminada de una fábrica argentina, el modelo de la cadena deja hasta ${usd(ST.confeccion.vende_usd)} (${pct(ST.confeccion.queda_pct, 1)}).`,
         true,
       ),
       tile(
@@ -597,7 +628,7 @@
         num(bandShare(teeC) * 100),
         "%",
         `${tons(sum(teeC.map(uncombed)))} de ${tons(sum(teeC.map(fibre)))} exportadas en ${closedF.temporada} salieron sucias o lavadas.` +
-          (hasCurrent ? ` En ${seasonLabel(currentF)}: ${pct(bandShare(teeNow))}.` : ""),
+          ` Con todas las finuras y los mismos meses (${sameMonths.etiqueta} contra el año anterior), la parte sin peinar pasó de ${pct(sameMonths.antes)} a ${pct(sameMonths.ahora)}.`,
       ),
       tile(
         `Lana que usa la industria del país, ${lastC.temporada}`,
@@ -610,7 +641,12 @@
         `Hilado argentino que declaran los compradores, ${lastY.anio}`,
         num(esp.hilados.kg / 1e3),
         "t",
-        `A ${perKg(esp.hilados.usd_kg)}, cerca de los ${perKg(K.parametros.hilado_fino_usd_kg.valor, 0)} del hilado fino de la cadena. Argentina no declara hilado exportado desde ${lastYarnYear + 1}.`,
+        `A ${perKg(esp.hilados.usd_kg)}, cerca de los ${perKg(K.parametros.hilado_fino_usd_kg.valor, 0)} del hilado fino de la cadena. Argentina no declara hilado exportado desde ${lastYarnYear + 1}` +
+          (underReportFrom
+            ? underReportFrom.anio === lastYarnYear + 1
+              ? `, el mismo año en que empieza a declarar a Comtrade menos peinada que la FLA: su cero pesa poco.`
+              : `, y desde ${underReportFrom.anio} declara a Comtrade menos peinada que la FLA: su cero pesa poco.`
+            : "."),
       ),
     ].join("");
   }
@@ -638,16 +674,19 @@
     const median = sorted[Math.floor(sorted.length / 2)];
     const cmp = D.comparacion;
     const growth = (k) => cmp.actual.toneladas[k] / cmp.anterior.toneladas[k] - 1;
-    const june = last.mensual?.[11];
+    const adj = adjustment(last.temporada);
     document.getElementById("frontera-lede").innerHTML =
-      `La industria llega hasta el peinado. La peinada exportada bajó de ${tons(peakP.toneladas.peinada)} en ${peakP.temporada} a ${tons(last.toneladas.peinada)} en ${last.temporada}, pero no porque se peine menos: bajó la producción. ` +
+      `La industria llega hasta el peinado. La peinada exportada bajó de ${tons(peakP.toneladas.peinada)} en ${peakP.temporada} a ${tons(last.toneladas.peinada)} en ${last.temporada}: se peina una parte parecida de una producción menor. ` +
       `Las toneladas limpias de peinada exportada equivalen al ${pct(combed(last))} de la producción base sucia en ${last.temporada}, y al ${pct(median)} en la temporada mediana de las ${seasons.length}. ` +
       `Lo que sí desapareció es la lana lavada, de ${tons(peakL.toneladas.lavada)} (${peakL.temporada}) a ${tons(last.toneladas.lavada)}` +
       (flaZeroSince ? `, y el hilado y el tejido, en 0 desde ${flaZeroSince}. ` : ". ") +
-      `La lana sucia fue ${pct(dirty(last))} del volumen de ${last.temporada}, contra ${pct(sum(prev5.map(dirty)) / prev5.length)} en promedio en las cinco temporadas anteriores: es el stock que se vendió` +
-      (june?.ajuste_anual ? `, buena parte en junio, con el ajuste anual de exportadores no socios (${tons(june.t)} ese mes)` : "") +
+      `La lana sucia fue ${pct(dirty(last))} del volumen de ${last.temporada}, contra ${pct(sum(prev5.map(dirty)) / prev5.length)} en promedio en las cinco temporadas anteriores. Coinciden dos cosas: se exportó más de lo producido (salió stock)` +
+      (adj
+        ? `, y el informe suma en junio el ajuste anual de exportadores no socios de la FLA, ${tons(adj.toneladas.sucia)} de lana sucia de ${tons(adj.total_t)}: lo que esos exportadores embarcaron en el año, anotado en un mes` +
+          (adjustedSeasons.length === 1 ? `. Es la única temporada de la serie con ese ajuste marcado, así que su lana sucia no se compara del todo con las anteriores` : "")
+        : "") +
       `. En ${cmp.actual.etiqueta} la sucia creció ${pct(growth("sucia"))} contra los mismos meses del año anterior y la peinada, ${pct(growth("peinada"))}. ` +
-      `<strong>Conexión con la industria:</strong> si las plantas que peinaban ${tons(peakP.toneladas.peinada)} siguen en pie, hoy peinan cerca de la mitad (inferencia); el sector habló de 30 a 40 % de capacidad ociosa en 2021 (<a href="industria.html#quien">ver “Quién industrializa”</a>).`;
+      `<strong>Conexión con la industria:</strong> si las plantas que peinaban ${tons(peakP.toneladas.peinada)} siguen en pie, hoy peinan cerca de la mitad (inferencia); una nota de 2021 cita de 30 a 40 % de capacidad ociosa, mención que no se releyó en el original (<a href="industria.html#quien">ver “Quién industrializa”</a>).`;
 
     // 3. Finura
     const teeC = teeBand(closedF);
@@ -658,21 +697,25 @@
       `La FLA no publica precios por micronaje, pero sí cuántas toneladas de cada producto salen en cada rango de finura. Es la única forma de comparar etapas para la misma lana. ` +
       `En ${closedF.temporada}, de la lana de hasta ${micron(TEE)}, la que lleva una remera para usar sobre la piel, salió sin peinar el <strong>${pct(bandShare(teeC))}</strong> (${tons(sum(teeC.map(uncombed)))}); ` +
       `de ${bandLabel(next).toLowerCase()}, el ${pct(next.sin_peinar_pct)}; de toda la lana fina de la FLA (hasta 24,5 µ), el ${pct(bandShare(fine))}. ` +
-      `La lana más fina no se peina más que la mediana: sale sin peinar en una proporción parecida, y sólo la gruesa (${bandLabel(coarse).toLowerCase()}) sale sucia todavía más seguido (${pct(coarse.sin_peinar_pct)}). ` +
-      `Esa temporada vendió stock como lana sucia, así que la parte sin peinar está alta en todas las bandas.` +
+      `La lana más fina no se peina más que la mediana: sale sin peinar en una proporción parecida, y la gruesa (${bandLabel(coarse).toLowerCase()}) sale sucia todavía más seguido (${pct(coarse.sin_peinar_pct)})` +
+      (coarse.ajuste_t != null ? `, aunque ${pct(coarse.ajuste_t / bandTotal(coarse))} de las toneladas de esa banda entraron con el ajuste anual de no socios de junio` : "") +
+      `. Esa temporada vendió stock como lana sucia, así que la parte sin peinar está alta en todas las bandas.` +
       (hasCurrent
-        ? ` En ${seasonLabel(currentF)} la peinada supera a la sucia en las dos bandas más finas: sale sin peinar el ${pct(bandShare(teeBand(currentF)))} de la lana de remera y el ${pct(currentF.bandas.find((b) => b.desde === 19).sin_peinar_pct)} de la de 19,0 a 19,9 µ.`
+        ? ` ${seasonLabel(currentF)} no se compara banda por banda con una temporada cerrada: son ${sameMonths.meses} meses y no trae ajuste. Con todas las finuras y los mismos meses, la parte sin peinar subió de ${pct(sameMonths.antes)} a ${pct(sameMonths.ahora)}.`
         : "");
 
     // 4. Valor
     const capture = (id) => pct(ST[id].queda_pct, 1);
     const brand = ST.tienda.agrega_usd / price;
+    const profitShares = ["hilado", "tela", "confeccion"].map((id) => ST[id].ganancia_usd / ST[id].agrega_usd);
     document.getElementById("valor-lede").innerHTML =
       `La remera de <a href="cadena.html">cadena.html</a> lleva ${num(topsG)} g de peinada: un kilo de peinada termina en ${num(1000 / topsG, 1)} remeras que se venden por ${usd((price * 1000) / topsG, 0)}. ` +
       `Si el país vende la peinada se queda con ${capture("peinada")} del precio; si vendiera el hilado, con ${capture("hilado")}; la tela, ${capture("tela")}; la remera terminada en fábrica, ${capture("confeccion")}. ` +
-      `Marca y tienda agregan el ${pct(brand)}. Dentro de la fábrica, el paso grande es la tela (tejer, teñir y terminar): ${usd(ST.tela.agrega_kg, 1)} por kilo de peinada, más que hilar y coser juntos. ` +
-      `La ganancia es una parte chica de cada paso industrial; el resto son costos, que también son valor que queda donde se hace el trabajo (salarios, energía, proveedores).`;
+      `Marca y tienda agregan el ${pct(brand)}. Dentro de la fábrica, el paso grande es la tela (tejer, teñir y terminar): ${usd(ST.tela.agrega_kg, 1)} por kilo de peinada` +
+      (ST.tela.agrega_kg > ST.hilado.agrega_kg + ST.confeccion.agrega_kg ? ", más que hilar y coser juntos. " : ". ") +
+      `La ganancia es de ${pct(Math.min(...profitShares))} a ${pct(Math.max(...profitShares))} de lo que agrega cada paso de fábrica; el resto son costos: salarios, energía, otros insumos y máquinas. Los que se pagan en el país quedan en él; el nailon, las tinturas o las máquinas que se compran afuera, no.`;
 
+    renderFindings();
     renderSteps();
     renderBuyers();
     renderMap();
@@ -681,6 +724,49 @@
 
     document.getElementById("foot").textContent =
       `Datos generados el ${longDate(O.generado)} con build.py a partir de los PDF de la FLA, los archivos de UN Comtrade y data/cadena.json. Uso personal.`;
+  }
+
+  // Resumen de hallazgos, arriba de todo; cada cifra sale de los mismos datos que las secciones.
+  function renderFindings() {
+    const teeC = teeBand(closedF);
+    const combed = (s) => s.toneladas.peinada / s.balance.produccion;
+    const sorted = seasons.map(combed).sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    const peakL = seasons.reduce((a, b) => (b.toneladas.lavada > a.toneladas.lavada ? b : a));
+    const g = combGap(closedF);
+    const comb = OP.peinar.comparables;
+    const opMin = Math.min(...comb.map((c) => c.operativo ?? Infinity));
+    const grMax = Math.max(...comb.map((c) => c.bruto ?? -Infinity));
+    const esp = lastY.espejo;
+    const factory = ST.confeccion.vende_usd - ST.peinada.vende_usd;
+    const fs = factoryCeiling();
+    const items = [
+      [
+        "El valor está después de la peinada",
+        `De una remera de ${num(price)} USD, la lana argentina cobra ${usd(ST.peinada.vende_usd)} (${pct(ST.peinada.queda_pct, 1)}) al precio promedio de la peinada, ${usd(fineTee.peinada_usd)} si fuera peinada fina al precio australiano. Hilar, tejer y coser en el país llevaría eso hasta ${usd(ST.confeccion.vende_usd)} (${pct(ST.confeccion.queda_pct, 1)}) en el modelo de la cadena; marca y tienda agregan el ${pct(ST.tienda.agrega_usd / price)}.`,
+      ],
+      [
+        "El país peina como antes; lo que dejó de exportar es lana lavada, hilado y tela",
+        `La peinada exportada sigue en torno al ${pct(median)} de la producción (${pct(combed(last))} en ${last.temporada}); la lavada bajó de ${tons(peakL.toneladas.lavada)} a ${tons(last.toneladas.lavada)}` +
+          (flaZeroSince ? `, y hilados y tejidos figuran en 0 desde ${flaZeroSince}.` : "."),
+      ],
+      [
+        "La lana más fina no se procesa más que la otra",
+        `De la lana de remera (hasta ${micron(TEE)}) salió sin peinar el ${pct(bandShare(teeC))} en ${closedF.temporada}, una temporada que vendió stock. ` +
+          `Con todas las finuras y los mismos meses, la parte sin peinar subió de ${pct(sameMonths.antes)} a ${pct(sameMonths.ahora)} (${sameMonths.etiqueta}).`,
+      ],
+      [
+        "El paso más cercano es el que menos gana; el siguiente gana bastante más",
+        `Peinar más lana propia suma unos ${usd(g.usd_kg)} por kilo limpio, con márgenes de ${pct(opMin)} operativo a ${pct(grMax, 1)} bruto. Hilar suma ${usd(ST.hilado.agrega_kg)} por kilo de peinada con ${pct(grossOf("hilar"), 1)} de margen bruto, y hay rastros de que se hace: los compradores declaran ${tons(esp.hilados.kg / 1e3)} de hilado de origen argentino a ${perKg(esp.hilados.usd_kg)} en ${lastY.anio}.`,
+      ],
+      [
+        "La tela es el paso de fábrica más grande",
+        `${usd(ST.tela.agrega_kg, 1)} por kilo de peinada, ${pct(ST.tela.agrega_usd / factory)} de lo que agrega la fábrica. Hilar, tejer y coser la peinada de remera de ${closedF.temporada} (${pct(baseOf(OP.hilar, closedF).t / last.toneladas.peinada)} de las toneladas de peinada) sumaría hasta ${usdM(fs)}, ${pct(fs / last.ingresos.peinada)} de lo que facturó toda la peinada exportada.`,
+      ],
+    ];
+    document.getElementById("hallazgos").innerHTML =
+      `<h3>Lo que se encontró</h3><ul>${items.map(([k, v]) => `<li><strong>${k}.</strong> ${v}</li>`).join("")}</ul>` +
+      `<p class="note">Cifras de las secciones 1 a 6, donde está cada fuente y cada advertencia. Los techos son máximos, no proyecciones.</p>`;
   }
 
   // 5. Eslabón por eslabón
@@ -696,7 +782,11 @@
     const exp = lastY.exportaciones;
     const factory = ST.confeccion.vende_usd - ST.peinada.vende_usd;
     const negs = seasons.filter((s) => gapH(s) < 0);
-    const negGap = negs.length ? `${negs.length} temporadas entre ${negs[0].temporada} y ${negs[negs.length - 1].temporada}` : "ninguna temporada";
+    const negGap = negs.length
+      ? `${negs.length} temporadas entre ${negs[0].temporada} y ${negs[negs.length - 1].temporada}${negs.every((s) => s.base === "efectiva") ? ", todas antes del cambio de método de 2005/06," : ""}`
+      : "ninguna temporada";
+    const cg = combGap(closedF);
+    const teeAdj = teeBand(closedF).every((b) => b.ajuste_t != null) ? sum(teeBand(closedF).map((b) => b.ajuste_t)) : null;
     const now = (id) => (hasCurrent ? ` En ${seasonLabel(currentF)}: ${tons(baseOf(OP[id], currentF).t)}.` : "");
     const card = (title, items) =>
       `<div class="card prose"><h3>${title}</h3><ul>${items.map(([k, v]) => `<li><strong>${k}.</strong> ${v}</li>`).join("")}</ul></div>`;
@@ -705,18 +795,21 @@
       card("Paso 0 · Peinar más de la lana propia", [
         [
           "Cuánta lana",
-          `En ${closedF.temporada} salieron sucias o lavadas ${tons(comb.t)} de lana de hasta ${micron(TEE)}, ${tons(next.t.sucia + next.t.lavada)} de 19,0 a 19,9 µ y ${tons(fineUncombed)} de toda la lana fina (hasta 24,5 µ).${now("peinar")} Es una temporada de venta de stock: en las cinco anteriores salieron sucias ${tons(sum(prev5.map((s) => s.toneladas.sucia)) / prev5.length)} por temporada, de todas las finuras.`,
+          `En ${closedF.temporada} salieron sucias o lavadas ${tons(comb.t)} de lana de hasta ${micron(TEE)}, ${tons(next.t.sucia + next.t.lavada)} de 19,0 a 19,9 µ y ${tons(fineUncombed)} de toda la lana fina (hasta 24,5 µ).${now("peinar")}${teeAdj != null ? ` El ajuste de junio sumó ${tons(teeAdj)} a la banda de remera, sin separar por producto.` : ""} Es una temporada de venta de stock: en las cinco anteriores salieron sucias ${tons(sum(prev5.map((s) => s.toneladas.sucia)) / prev5.length)} por temporada, de todas las finuras. Y el balance estima que al cierre quedaban ${tons(LQ.remanente)} base sucia sin exportar ni usar, ${pct(LQ.remanente / LQ.produccion)} de un año de producción: cuando salgan, pueden salir sucias o peinadas.`,
         ],
         [
           "Cuánto agrega",
-          `La peinada se exportó a ${perKg(g.peinada)} y la sucia a ${perKg(g.sucia)} por kilo limpio: ${perKg(g.usd_kg)} más (${pct(g.prima)}); en las cinco temporadas anteriores, ${perKg(sum(prev5.map(gapH)) / prev5.length)} en promedio, y en ${negGap} la sucia valió más que la peinada. Paga lavado, peinado y la fibra corta que se pierde, y mezcla finuras: es lo que suma en ventas, no lo que se gana. Con la lana de remera, hasta ${usdM(comb.techo_usd)} por temporada.`,
+          (g.sin_ajuste
+            ? `Sin el mes del ajuste anual de no socios, la peinada se exportó a ${perKg(cg.peinada)} y la sucia a ${perKg(cg.sucia)} por kilo limpio: ${perKg(cg.usd_kg)} más (${pct(cg.prima)}); con ese mes, que suma lana sucia barata, ${perKg(g.usd_kg)}. `
+            : `La peinada se exportó a ${perKg(g.peinada)} y la sucia a ${perKg(g.sucia)} por kilo limpio: ${perKg(g.usd_kg)} más (${pct(g.prima)}). `) +
+            `En las cinco temporadas anteriores promedió ${perKg(sum(prev5.map(gapH)) / prev5.length)}, y en ${negGap} la sucia valió más que la peinada. Paga lavado, peinado y la fibra corta que se pierde, y mezcla finuras; como un kilo limpio de sucia rinde menos de un kilo de peinada, exagera lo que se suma. Con la lana de remera, hasta ${usdM(comb.techo_usd)} por temporada.`,
         ],
-        ["Cuánto es ganancia", `Poca. ${comparablesText("peinar")}. Es el menor margen bruto de las etapas industriales de la tabla de márgenes.`],
+        ["Cuánto es ganancia", `Poca. ${comparablesText("peinar")}.` + (OP.peinar.comparables.some((c) => c.empresa.startsWith("Chargeurs")) ? " El 1 % de Chargeurs es de un segmento que comercia lana y no consolida la peinaduría de Trelew." : "") + (grossOf("peinar") < Math.min(grossOf("hilar"), grossOf("tejer"), grossOf("confeccionar")) ? " Es el menor margen bruto de las etapas industriales de la tabla de márgenes." : "")],
         [
           "Qué hay en el país",
-          `Seis plantas en el polo de Trelew y no más de diez exportadoras. La peinada exportada cayó de ${tons(peakP.toneladas.peinada)} (${peakP.temporada}) a ${tons(last.toneladas.peinada)}: si las plantas siguen, hay capacidad sin usar. La Peinaduría Río Chubut trabajaba al 70 % en 2018.`,
+          `Seis plantas en el polo de Trelew y no más de diez exportadoras. La peinada exportada cayó de ${tons(peakP.toneladas.peinada)} (${peakP.temporada}) a ${tons(last.toneladas.peinada)}: si las plantas siguen, hay capacidad sin usar (inferencia). La Peinaduría Río Chubut trabajaba al 70 % en 2018.`,
         ],
-        ["Tipo de dato", "Toneladas y precios medidos (FLA). Plantas y capacidad: fuentes del sector y prensa, en industria.html."],
+        ["Tipo de dato", "Toneladas y precios: FLA, medidos. La diferencia de precio y el techo: derivados. Plantas y capacidad: fuentes del sector y prensa, en industria.html."],
       ]),
       card("Paso 1 · Hilar la peinada fina", [
         [
@@ -725,15 +818,15 @@
         ],
         [
           "Cuánto agrega",
-          `En la remera, ${usd(ST.hilado.agrega_kg)} por kilo de peinada; ${usd(ST.hilado.ganancia_kg)} son ganancia. Techo: ${usdM(spin.techo_usd)}. La cadena toma el hilado peinado fino a ${perKg(K.parametros.hilado_fino_usd_kg.valor, 0)}, de un solo aviso, y lo medido coincide: los compradores declararon ${tons(esp.hilados.kg / 1e3)} de hilado argentino en ${lastY.anio} a ${perKg(esp.hilados.usd_kg)}. No se puede restar la peinada promedio (${perKg(esp.peinada.usd_kg)}) para sacar lo que agrega hilar: el hilado lleva lana más fina que el promedio.`,
+          `En la remera, ${usd(ST.hilado.agrega_kg)} por kilo de peinada; ${usd(ST.hilado.ganancia_kg)} son ganancia. Techo: ${usdM(spin.techo_usd)}. La cadena toma el hilado peinado fino a ${perKg(K.parametros.hilado_fino_usd_kg.valor, 0)}, de un solo aviso, y lo que declaran los compradores es del mismo orden: ${tons(esp.hilados.kg / 1e3)} de hilado argentino en ${lastY.anio} a ${perKg(esp.hilados.usd_kg)}, un promedio CIF de hilados distintos. No se puede restar la peinada promedio (${perKg(esp.peinada.usd_kg)}) para sacar lo que agrega hilar: el hilado lleva lana más fina que el promedio.`,
         ],
-        ["Cuánto es ganancia", `${comparablesText("hilar")}. El margen bruto es unas cuatro veces el del peinado.`],
+        ["Cuánto es ganancia", `${comparablesText("hilar")}. El margen bruto es ${num(grossOf("hilar") / grossOf("peinar"), 1)} veces el del peinado.`],
         [
           "Qué hay en el país",
-          `La Cooperativa Lanera Trelew es la única del polo con hilandería. Argentina no declara exportaciones de hilado desde ${lastYarnYear + 1}, pero los compradores sí, casi todo hilado de lana peinada (partida 5107) y sobre todo Turquía: alguien en el país hila para exportar sin aparecer en las estadísticas argentinas, o el origen que declaran los compradores no es donde se hiló. La industria del país usó ${tons(lastC.finura.fina)} de lana fina en ${lastC.temporada}, contra ${tons(prevC.finura.fina)} la temporada anterior` +
+          `La Cooperativa Lanera Trelew es la única del polo con hilandería. Argentina no declara exportaciones de hilado desde ${lastYarnYear + 1}${flaZeroSince ? ` y la FLA anota 0 desde ${flaZeroSince}` : ""}, pero los compradores declaran hilado de origen argentino, casi todo de lana peinada (partida 5107) y sobre todo Turquía (archivos de 2019 a ${lastY.anio}). ${yarnCaveat()}O alguien hila para exportar fuera de las cuentas de la FLA, o el origen que declaran los compradores no es donde se hiló. La industria del país usó ${tons(lastC.finura.fina)} de lana fina en ${lastC.temporada}, contra ${tons(prevC.finura.fina)} la temporada anterior` +
             (nowBalance ? ` y ${tons(nowBalance.fina.consumo_local)} estimadas para ${currentF.temporada}: la caída de un año es una estimación, no una tendencia.` : "."),
         ],
-        ["Tipo de dato", "Hilado exportado: medido por los compradores (Comtrade). Valor agregado: modelo de la remera."],
+        ["Tipo de dato", "Hilado exportado: declarado por los compradores (Comtrade). Valor agregado: modelo de la remera."],
       ]),
       card("Paso 2 · Tejer, teñir y terminar la tela", [
         ["Cuánta lana", `La misma peinada de hasta ${micron(TEE)}: ${tons(spin.t)} en ${closedF.temporada}.`],
@@ -746,7 +839,7 @@
           "Qué hay en el país",
           `La FLA registra tejidos en 0${flaZeroSince ? ` desde ${flaZeroSince}` : ""}; en ${lastY.anio} Argentina declaró ${tons(exp.telas.kg / 1e3)} de telas de lana exportadas e importó ${tons(imp.telas.kg / 1e3)} a ${perKg(imp.telas.usd_kg)} (${usdM(imp.telas.usd, 2)}).`,
         ],
-        ["Tipo de dato", "Comercio: medido (Comtrade). Valor agregado: modelo de la remera."],
+        ["Tipo de dato", `Comercio: Comtrade${underReportFrom ? `, donde Argentina declara de menos desde ${underReportFrom.anio}` : ""}. Valor agregado: modelo de la remera.`],
       ]),
       card("Paso 3 · Cortar y coser la prenda", [
         ["Cuánta lana", `La misma peinada: ${tons(spin.t)}.`],
@@ -757,9 +850,9 @@
         ["Cuánto es ganancia", `${comparablesText("confeccionar")}.`],
         [
           "Qué hay en el país",
-          `Textilana (Mauro Sergio), en Mar del Plata, integrada del hilado a la venta, paró su producción en marzo de 2026; la nota no dice qué fibra usa. Hay tejedoras artesanales, como la cooperativa Albor Patagonia de Puerto Madryn. En ${lastY.anio} el país importó ${tons(imp.prendas.kg / 1e3)} de prendas de lana a ${perKg(imp.prendas.usd_kg)} (${usdM(imp.prendas.usd)}) y exportó ${usdM(exp.prendas.usd, 2)}.`,
+          `Textilana (Mauro Sergio), en Mar del Plata, integrada del hilado a la venta, paró su producción en marzo de 2026; la nota no dice qué fibra usa. Hay tejedoras artesanales, como la cooperativa Albor Patagonia de Puerto Madryn (mención sin releer en el original). En ${lastY.anio} el país importó ${tons(imp.prendas.kg / 1e3)} de prendas de lana a ${perKg(imp.prendas.usd_kg)} (${usdM(imp.prendas.usd)}) y exportó ${usdM(exp.prendas.usd, 2)}.`,
         ],
-        ["Tipo de dato", "Comercio: medido (Comtrade). Empresas: prensa, en industria.html. Valor agregado: modelo de la remera."],
+        ["Tipo de dato", `Comercio: Comtrade${underReportFrom ? `, donde Argentina declara de menos desde ${underReportFrom.anio}` : ""}. Empresas: prensa, en industria.html. Valor agregado: modelo de la remera.`],
       ]),
       card("Paso 4 · La marca y la tienda", [
         ["Cuánta lana", `La misma peinada: ${tons(spin.t)}.`],
@@ -818,23 +911,23 @@
       paso: "0 · ya lo hace",
       que: "Peinar en el país la lana fina que hoy sale sucia",
       hay: "Seis plantas en Trelew; peinada exportada a la mitad de su máximo",
-      dato: "Medido (FLA)",
+      dato: "Derivado de precios FLA",
     },
     hilar: {
       paso: "1",
       que: "Hilar la peinada fina",
       hay: "Una cooperativa con hilandería; hilado que declaran los compradores, no Argentina",
-      dato: "Medido por compradores; modelo",
+      dato: "Declarado por compradores; modelo",
     },
-    tejer: { paso: "2", que: "Tejer, teñir y terminar la tela", hay: "Sin exportación de telas; importa", dato: "Medido (Comtrade); modelo" },
-    confeccionar: { paso: "3", que: "Cortar y coser la prenda", hay: "Tejido artesanal; una fábrica grande cerró en 2026", dato: "Medido (Comtrade); prensa; modelo" },
+    tejer: { paso: "2", que: "Tejer, teñir y terminar la tela", hay: "Sin exportación de telas; importa", dato: "Comtrade, con subdeclaración argentina; modelo" },
+    confeccionar: { paso: "3", que: "Cortar y coser la prenda", hay: "Tejido artesanal; Textilana paró en 2026 (fibra sin dato)", dato: "Comtrade, con subdeclaración argentina; prensa; modelo" },
     vender: { paso: "4", que: "Vender con marca propia", hay: "Nada con volumen publicado", dato: "Modelo; empresas cotizadas" },
   };
 
   function renderMap() {
     const cur = hasCurrent ? currentF : null;
     document.getElementById("mapa-lede").textContent =
-      `Del paso más cercano a lo que el país ya hace al más lejano. La base es la lana de remera (hasta ${micron(TEE)}) que salió en ${closedF.temporada} sin haber pasado por ese paso en el país; el techo la multiplica por lo que agrega el paso. ` +
+      `Del paso más cercano a lo que el país ya hace al más lejano. La base del paso 0 es la lana de remera (hasta ${micron(TEE)}) que salió sin peinar en ${closedF.temporada}; la de los pasos 1 a 4, la que ya sale peinada. El techo multiplica la base por lo que agrega el paso. ` +
       `Es un máximo, no una proyección: supone que toda esa lana da el paso y que se vende a los precios de la remera. Los techos se suman sólo en orden: tejer supone hilar antes.` +
       (cur ? ` La columna parcial es ${seasonLabel(cur)}.` : "");
     const head = [
@@ -867,13 +960,15 @@
     });
     document.getElementById("tabla-mapa").innerHTML = tableHtml(head, rows, true);
     const g = gapOf(closedF);
-    const factorySum = sum(["hilar", "tejer", "confeccionar"].map((id) => baseOf(OP[id], closedF).techo_usd));
+    const factorySum = factoryCeiling();
     document.getElementById("mapa-notas").innerHTML = [
       `<strong>Dónde está cada cosa.</strong> El paso 0 es el más cercano y el de menos ganancia. Los pasos 1 a 3 son industria que hoy no existe a escala; el 2, la tela, es el más grande de los tres. El 4 es el más grande de todos y el más lejano: depende de llegar al comprador final.`,
       `<strong>Los pasos 1 a 3 juntos.</strong> Hilar, tejer y coser en el país la peinada de remera de ${closedF.temporada} agregaría hasta ${usdM(factorySum)}: ${pct(factorySum / last.ingresos.peinada)} de lo que facturó toda la peinada exportada esa temporada (${usdM(last.ingresos.peinada, 0)}), con ${pct(baseOf(OP.hilar, closedF).t / last.toneladas.peinada)} de sus toneladas.`,
       `<strong>Por qué la base es una sola banda.</strong> Los precios de los pasos 1 a 4 salen de una remera de lana fina; aplicarlos a lana más gruesa sería suponer otra prenda. El paso 0 sí vale para toda la lana: con toda la fina, la base sube a ${tons(sum(upTo(closedF, 24.5).map(uncombed)))}.`,
-      `<strong>El paso 0 mezcla finuras.</strong> La diferencia de ${perKg(g.usd_kg)} entre peinada y sucia compara dos promedios con distinta mezcla de finura, y la FLA no publica precio por micronaje.`,
-      `<strong>La temporada base vendió stock.</strong> En ${LQ.temporada} la exportación fue ${pct(LQ.exportado_sobre_produccion)} de la producción (base sucia).`,
+      `<strong>El paso 0 mezcla finuras.</strong> La diferencia de ${perKg(combGap(closedF).usd_kg)} entre peinada y sucia${g.sin_ajuste ? ` (sin el mes del ajuste anual de no socios; con él, ${perKg(g.usd_kg)})` : ""} compara dos promedios con distinta mezcla de finura, y la FLA no publica precio por micronaje. Además, un kilo limpio de sucia rinde menos de un kilo de peinada, así que exagera lo que se suma.`,
+      `<strong>La temporada base vendió stock.</strong> En ${LQ.temporada} la exportación fue ${pct(LQ.exportado_sobre_produccion)} de la producción (base sucia)` +
+        (adjustment(LQ.temporada) ? `, y sumó en junio el ajuste anual de exportadores no socios (${tons(adjustment(LQ.temporada).toneladas.sucia)} de lana sucia).` : "."),
+      `<strong>Márgenes.</strong> Los de la tabla de <a href="cadena.html#margenes">cadena.html</a>: empresas enteras, no esta remera, y sólo Canada Goose se releyó en el original.`,
     ]
       .map((t) => `<li>${t}</li>`)
       .join("");
@@ -890,11 +985,11 @@
       ],
       [
         "Precio por finura",
-        `¿Cobra la lana argentina fina lo que vale? La peinada argentina promedió ${perKg(same.usd_kg)} en los mismos meses en que la australiana de 18,5 µ valía ${perKg(f.usd_kg)} en Italia, ${num(f.usd_kg / same.usd_kg, 1)} veces más. La FLA no publica precio por micronaje: ¿cuánto de esa diferencia es finura y cuánto es descuento por origen, lotes chicos, falta de trazabilidad o certificación?`,
+        `¿Cobra la lana argentina fina lo que vale? La peinada argentina promedió ${perKg(same.usd_kg)} en los mismos meses en que la australiana de 18,5 µ valía ${perKg(f.usd_kg)} en Italia, ${num(f.usd_kg / same.usd_kg, 1)} veces ese precio (uno en Italia, con flete, contra uno FOB argentino). La FLA no publica precio por micronaje: ¿cuánto de esa diferencia es finura y cuánto es descuento por origen, lotes chicos, falta de trazabilidad o certificación?`,
       ],
       [
         "Hilado",
-        `¿Quién hace el hilado que declaran Turquía y otros compradores, y por qué no aparece en lo que declara Argentina? ¿Qué escala necesita una hilandería de peinado fino para competir, y qué falta para tenerla?`,
+        `¿Quién hace el hilado que declaran Turquía y otros compradores, y por qué no aparece ni en lo que declara Argentina ni en las cuentas de la FLA? ¿Qué escala necesita una hilandería de peinado fino para competir, y qué falta para tenerla?`,
       ],
       [
         "Tela y tintorería",
@@ -907,6 +1002,10 @@
       [
         "Marca y tienda",
         `¿Qué hace falta para llegar al comprador final: certificaciones (como ZQ o RWS), acceso a mercados, aranceles (la remera paga ${pct(K.arancel.total, 1)} para entrar a EE. UU. desde Vietnam) y lo que prefieren los consumidores?`,
+      ],
+      [
+        "Exportadores no socios",
+        "¿Quiénes son los exportadores no socios de la FLA que suman sobre todo lana sucia en el ajuste de junio de 2026, y por qué es la única temporada de la serie con ese ajuste marcado? ¿Tiene que ver la “barraca de campo”, que deja exportar al productor sin pasar por un acopio ni una peinaduría?",
       ],
       [
         "Lavado",
@@ -935,11 +1034,11 @@
       `<strong>Fuentes.</strong> Informes mensuales de la FLA (tabla de micronaje por producto, ${closedF.temporada} y ${currentF.temporada}), informes anuales de la FLA (${first.temporada} a ${last.temporada}), UN Comtrade (${years[0].anio} a ${lastY.anio}) y la remera de <a href="cadena.html">cadena.html</a>, con sus supuestos y fuentes en <code>data/cadena.json</code>.`,
       `<strong>Bandas de finura.</strong> Juntan filas de la tabla de micronaje de la FLA sin partir ninguna; el build se detiene si una fila cruza el borde de una banda o si las filas no suman las toneladas de cada producto. Hasta ${micron(TEE)} es la lana de la remera: Icebreaker declara 18,9 µ para la suya y la cadena precia la peinada fina a 18,5 µ.`,
       "<strong>Sin peinar.</strong> Sucia y lavada sobre sucia, lavada y peinada de la misma banda. Blousse y subproductos quedan fuera: sólo existen donde alguien ya peinó.",
-      "<strong>Valor agregado y ganancia.</strong> Lo que agrega un paso es lo que vende menos lo que compra: paga salarios, energía, insumos, máquinas y ganancia, y todo eso queda donde se hace el paso. La ganancia es el margen operativo de una empresa cotizada de esa etapa aplicado a lo que vende el paso: un promedio de empresas enteras, no el de esta remera.",
+      "<strong>Valor agregado y ganancia.</strong> Lo que agrega un paso es lo que vende menos la lana que compra: paga salarios, energía, otros insumos (el nailon, tinturas, avíos), máquinas y ganancia. Lo que se compra afuera no queda en el país, así que es un techo de lo que queda. La ganancia es el margen operativo de una empresa cotizada de esa etapa aplicado a lo que vende el paso: un promedio de empresas enteras, no el de esta remera.",
       `<strong>Por kilo de peinada.</strong> Lo que agrega cada paso de la remera dividido por los ${num(topsG)} g de peinada que lleva. Permite multiplicar por las toneladas de la FLA, que están en peinada.`,
       "<strong>Bases distintas.</strong> Las toneladas de exportación de la FLA son limpias; las del balance (producción, consumo, remanente), base sucia; las de Comtrade, peso neto por año calendario. No se suman entre sí.",
       "<strong>Lo que queda fuera.</strong> El flete y el arancel de la remera, los derechos de exportación, las normas y lo que prefieren los compradores. Los países aparecen sólo para mostrar quién hace la etapa siguiente, no para explicar por qué.",
-      "<strong>Lo que el sitio calcula.</strong> Bandas, parte sin peinar, diferencia de precio, valores por kilo de peinada y techos se calculan en <code>pipeline/opportunities.py</code>; el resto viene de las otras páginas.",
+      "<strong>Lo que el sitio calcula.</strong> Bandas, parte sin peinar, diferencia de precio, valores por kilo de peinada y techos se calculan en <code>pipeline/opportunities.py</code>. Los promedios de cinco temporadas, la mediana de peinada sobre producción, las sumas del mapa y los cocientes del texto se calculan en la página con los mismos datos. Los márgenes de referencia son los de <a href=\"cadena.html#margenes\">cadena.html</a>: sólo Canada Goose se releyó en el original.",
     ];
     document.getElementById("metodo").innerHTML = items.map((t) => `<li>${t}</li>`).join("");
   }
