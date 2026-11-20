@@ -59,7 +59,8 @@ desconocido; el mensaje dice qué tabla falló. Un país nuevo se agrega en `COU
   `site/industria-data.js`, `site/cadena-data.js` y `site/oportunidades-data.js`.
 - `site/` — `index.html` y `app.js` (temporada actual), `historia.html` y `historia.js` (1998/99 en adelante),
   `industria.html` y `industria.js` (lee también `historia-data.js`), `cadena.html` y `cadena.js`,
-  `oportunidades.html` y `oportunidades.js` (lee los datos de las otras cuatro), `styles.css`;
+  `oportunidades.html` y `oportunidades.js` (lee los datos de las otras cuatro), `styles.css` y `ui.js`
+  (común a las cinco: cabecera, recorrido entre páginas, animaciones y las fibras decorativas; no toca datos);
   gráficos con ECharts, incluido en `site/vendor/`.
 
 Para lana sucia, lavada y peinada la página de industria usa la FLA, no Comtrade: desde 2018 lo que
