@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lana argentina · oportunidades</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <div>
+      <h1>¿Dónde puede la industria argentina quedarse con más valor de su lana?</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#resumen">Resumen</a>
+      <a href="#panorama">1. Tamaño</a>
+      <a href="#frontera">2. Hasta dónde procesa</a>
+      <a href="#finura">3. Qué lana sale sin peinar</a>
+      <a href="#valor">4. Dónde está el valor</a>
+      <a href="#eslabones">5. Eslabón por eslabón</a>
+      <a href="#mapa">6. Mapa</a>
+      <a href="#preguntas">7. Preguntas</a>
+      <a href="#fuentes">Método</a>
+      <a href="index.html"><strong>Temporada actual →</strong></a>
+      <a href="historia.html"><strong>Historia →</strong></a>
+      <a href="industria.html"><strong>Industria →</strong></a>
+      <a href="cadena.html"><strong>Cadena de una remera →</strong></a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="resumen">
+    <div class="hero-grid" id="kpis"></div>
+    <div class="card prose" style="margin-top:16px">
+      <h3>Qué es esta página</h3>
+      <p class="lede" style="margin:0">Junta las tres investigaciones del sitio: las estadísticas de exportación de la FLA
+        (<a href="index.html">temporada actual</a> e <a href="historia.html">historia</a>), la
+        <a href="industria.html">industria</a> y la <a href="cadena.html">cadena de una remera</a>. Va de lo general a
+        lo particular: el tamaño de la cadena, la etapa en que sale la lana, la finura de lo que sale, el valor de cada
+        etapa de una prenda y, al final, cada eslabón que el país no hace hoy. <strong>Mira sólo la cadena</strong>:
+        cuánto, dónde y a qué precio. El comercio entre países, los gustos de los compradores, los impuestos, los
+        aranceles y las normas quedan para la etapa siguiente, que buscará el porqué; la sección 7 deja anotadas esas
+        preguntas.</p>
+    </div>
+  </section>
+
+  <section id="panorama">
+    <h2>1. El tamaño de la cadena</h2>
+    <p class="lede" id="panorama-lede"></p>
+    <div class="card" data-chart="panorama"></div>
+  </section>
+
+  <section id="frontera">
+    <h2>2. Hasta dónde procesa el país</h2>
+    <p class="lede" id="frontera-lede"></p>
+    <div class="card" data-chart="frontera"></div>
+  </section>
+
+  <section id="finura">
+    <h2>3. Qué lana sale sin peinar</h2>
+    <p class="lede" id="finura-lede"></p>
+    <div class="season-bar" style="position:static;margin:0 0 16px">
+      <span>Temporada</span>
+      <div class="seg" role="radiogroup" aria-label="Temporada" id="finura-seg"></div>
+    </div>
+    <div class="card" data-chart="finura"></div>
+  </section>
+
+  <section id="valor">
+    <h2>4. Dónde está el valor de una prenda</h2>
+    <p class="lede" id="valor-lede"></p>
+    <div class="grid-2">
+      <div class="card" data-chart="queda"></div>
+      <div class="card" data-chart="agrega"></div>
+    </div>
+  </section>
+
+  <section id="eslabones">
+    <h2>5. Eslabón por eslabón</h2>
+    <p class="lede">Cada eslabón que la industria no hace a escala, del más cercano a lo que ya hace al más lejano. Para
+      cada uno: cuánta lana podría tomarlo, cuánto agrega por kilo, cuánto de eso es ganancia y qué hay hoy en el país.
+      Los volúmenes son de la lana de la remera (hasta <span class="tee-micron"></span>) porque los precios de las
+      etapas siguientes salen de esa remera.</p>
+    <div id="eslabones-cards"></div>
+    <div class="card" data-chart="hilado"></div>
+    <div class="card prose">
+      <h3>Quién hace la etapa siguiente con la lana argentina</h3>
+      <p class="note" id="compradores-note"></p>
+      <div class="table-wrap" id="tabla-compradores"></div>
+    </div>
+  </section>
+
+  <section id="mapa">
+    <h2>6. Mapa de oportunidades</h2>
+    <p class="lede" id="mapa-lede"></p>
+    <div class="card prose">
+      <div class="table-wrap" id="tabla-mapa" style="max-height:none"></div>
+      <ul id="mapa-notas"></ul>
+    </div>
+  </section>
+
+  <section id="preguntas">
+    <h2>7. Preguntas para la etapa siguiente</h2>
+    <p class="lede">Esta página encuentra dónde se escapa el valor, no por qué. Estas son las preguntas que quedan para
+      cuando entren las variables de afuera de la cadena: comercio, compradores, impuestos y normas.</p>
+    <div class="card prose">
+      <ul id="lista-preguntas"></ul>
+    </div>
+  </section>
+
+  <section id="fuentes">
+    <h2>Método y límites</h2>
+    <div class="card prose">
+      <ul id="metodo"></ul>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p id="foot"></p>
+</footer>
+
+<script src="vendor/echarts.min.js"></script>
+<script src="data.js"></script>
+<script src="historia-data.js"></script>
+<script src="industria-data.js"></script>
+<script src="cadena-data.js"></script>
+<script src="oportunidades-data.js"></script>
+<script src="oportunidades.js"></script>
+</body>
+</html>

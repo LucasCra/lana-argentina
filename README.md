@@ -10,6 +10,9 @@ en el país con esa lana: etapa en que se exporta, consumo industrial interno, p
 etapa, comercio de hilados, telas y prendas de lana (UN Comtrade, 2000 en adelante) y quién industrializa.
 La página `site/cadena.html` sigue una remera de merino (Smartwool, 95 dólares) desde la peinada argentina, al
 precio de exportación de la FLA, hasta la tienda: cuánto agrega cada etapa y cuánto de eso es costo y ganancia.
+La página `site/oportunidades.html` junta las tres: va del tamaño de la cadena a la finura de lo que sale sin
+peinar y a cada eslabón que el país no hace (hilar, tejer, coser, vender), con cuánta lana podría tomarlo,
+cuánto agrega por kilo y qué hay hoy. Mira sólo la cadena; comercio, impuestos y normas quedan para después.
 
 ## Ver el sitio
 
@@ -49,10 +52,14 @@ desconocido; el mensaje dice qué tabla falló. Un país nuevo se agrega en `COU
   original. Se edita a mano; el build se detiene si a un parámetro le falta la fuente o sale de su rango.
 - `pipeline/chain.py` — el precio FLA de la peinada y `data/cadena.json` → la cadena de `cadena.html`: gramos
   por etapa, valor de cada etapa, costos y ganancia, y los escenarios.
+- `pipeline/opportunities.py` — lo que junta las páginas → `oportunidades.html`: toneladas por banda de finura y
+  producto con la parte que sale sin peinar, la diferencia de precio peinada − sucia, lo que agrega cada etapa de
+  la remera por kilo de peinada y el techo de cada eslabón. El build se detiene si una banda no cuadra.
 - `build.py` — corre todo y escribe `data/processed/` (para revisar), `site/data.js`, `site/historia-data.js`,
-  `site/industria-data.js` y `site/cadena-data.js`.
+  `site/industria-data.js`, `site/cadena-data.js` y `site/oportunidades-data.js`.
 - `site/` — `index.html` y `app.js` (temporada actual), `historia.html` y `historia.js` (1998/99 en adelante),
-  `industria.html` y `industria.js` (lee también `historia-data.js`), `cadena.html` y `cadena.js`, `styles.css`;
+  `industria.html` y `industria.js` (lee también `historia-data.js`), `cadena.html` y `cadena.js`,
+  `oportunidades.html` y `oportunidades.js` (lee los datos de las otras cuatro), `styles.css`;
   gráficos con ECharts, incluido en `site/vendor/`.
 
 Para lana sucia, lavada y peinada la página de industria usa la FLA, no Comtrade: desde 2018 lo que

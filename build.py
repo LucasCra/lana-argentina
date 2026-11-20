@@ -7,9 +7,10 @@ Writes data/processed/informes.json (every parsed table, for checking) and
 site/data.js (what the site draws) from the monthly issues in data/raw,
 data/processed/anuales.json and site/historia-data.js from the annual issues
 in data/raw/anuales, site/industria-data.js from the annual issues plus
-the UN Comtrade files in data/raw/comercio, and site/cadena-data.js from the
-monthly tops price plus the assumptions in data/cadena.json. Stops with the failing check if
-any source does not add up; nothing is written in that case.
+the UN Comtrade files in data/raw/comercio, site/cadena-data.js from the
+monthly tops price plus the assumptions in data/cadena.json, and
+site/oportunidades-data.js from the monthly, history and chain results. Stops with
+the failing check if any source does not add up; nothing is written in that case.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from pipeline.derive import derive
 from pipeline.fetch import ANNUAL_PAGES, fetch_new, load_sources
 from pipeline.history import derive_history
 from pipeline.industry import derive_industry
+from pipeline.opportunities import derive_opportunities
 from pipeline.parse import ReportError, parse_report
 
 ROOT = Path(__file__).parent
@@ -84,6 +86,12 @@ def main() -> int:
         print(f"ERROR {CHAIN.name}: {error}", file=sys.stderr)
         return 1
     chain["generado"] = data["generado"]
+    try:
+        opportunities = derive_opportunities(data, history, chain)
+    except ReportError as error:
+        print(f"ERROR oportunidades: {error}", file=sys.stderr)
+        return 1
+    opportunities["generado"] = data["generado"]
 
     processed = ROOT / "data" / "processed"
     processed.mkdir(parents=True, exist_ok=True)
@@ -93,6 +101,7 @@ def main() -> int:
     _write_js(ROOT / "site" / "historia-data.js", "HISTORIA", history)
     _write_js(ROOT / "site" / "industria-data.js", "INDUSTRIA", industry)
     _write_js(ROOT / "site" / "cadena-data.js", "CADENA", chain)
+    _write_js(ROOT / "site" / "oportunidades-data.js", "OPORTUNIDADES", opportunities)
     first, last = reports[0]["numero"], reports[-1]["numero"]
     print(f"{len(reports)} informes: EL {first}–{last} -> site/data.js")
     seasons = history["temporadas"]
@@ -106,6 +115,7 @@ def main() -> int:
         " -> site/industria-data.js"
     )
     print(f"remera de {chain['producto']['nombre']} -> site/cadena-data.js")
+    print(f"{len(opportunities['oportunidades'])} etapas por sumar -> site/oportunidades-data.js")
     for season in seasons:
         for warning in season["avisos"]:
             print(f"aviso {season['temporada']}: {warning}")
