@@ -606,7 +606,10 @@
       .join("");
     const node = card.querySelector(".chart");
     instances[id] ??= echarts.init(node, null, { renderer: "canvas" });
-    instances[id].setOption(spec.option(), true);
+    const option = spec.option();
+    // Con "reducir movimiento" el gráfico aparece sin animación.
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) option.animation = false;
+    instances[id].setOption(option, true);
     renderTable(id);
   }
 
