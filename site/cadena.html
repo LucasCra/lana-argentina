@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lana argentina · cadena</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <div>
+      <h1>De la peinada argentina a una remera de 95 dólares</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#resumen">Resumen</a>
+      <a href="#cascada">Valor por etapa</a>
+      <a href="#etapas">Costo y ganancia</a>
+      <a href="#kilos">Cuánta lana lleva</a>
+      <a href="#supuestos">Si cambia un supuesto</a>
+      <a href="#margenes">Márgenes de referencia</a>
+      <a href="#fuentes">Fuentes</a>
+      <a href="index.html"><strong>Temporada actual →</strong></a>
+      <a href="historia.html"><strong>Historia →</strong></a>
+      <a href="industria.html"><strong>Industria →</strong></a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="resumen">
+    <div class="hero-grid" id="kpis"></div>
+    <p class="note" id="kpi-note"></p>
+  </section>
+
+  <section id="cascada">
+    <h2>Cuánto agrega cada etapa</h2>
+    <p class="lede" id="cascada-lede"></p>
+    <div class="card" data-chart="cascada"></div>
+    <div class="card" data-chart="kilo"></div>
+  </section>
+
+  <section id="etapas">
+    <h2>Costo y ganancia de cada etapa</h2>
+    <p class="lede">Lo que cada etapa agrega se reparte entre sus costos (mano de obra, energía, tinturas,
+      máquinas, alquileres, publicidad) y su ganancia. La ganancia sale del margen operativo de una empresa
+      cotizada de esa etapa, aplicado a lo que vende la etapa: es un promedio de empresas enteras, no el de esta
+      remera. Los costos son el resto.</p>
+    <div class="card prose">
+      <div class="table-wrap" id="tabla-etapas"></div>
+      <ul id="notas-etapas"></ul>
+    </div>
+  </section>
+
+  <section id="kilos">
+    <h2>Cuánta lana lleva una remera</h2>
+    <p class="lede" id="kilos-lede"></p>
+    <div class="card" data-chart="masas"></div>
+  </section>
+
+  <section id="supuestos">
+    <h2>Qué cambia si cambia un supuesto</h2>
+    <p class="lede" id="supuestos-lede"></p>
+    <div class="card" data-chart="escenarios"></div>
+  </section>
+
+  <section id="margenes">
+    <h2>Márgenes de referencia</h2>
+    <p class="lede">Lo que ganan empresas cotizadas de cada etapa, de sus últimos balances. El margen bruto es
+      ventas menos costo de lo vendido; el operativo descuenta además los gastos de venta, administración y
+      publicidad. Las chinas informan una utilidad operativa que incluye resultados financieros. Ninguna publica
+      el margen de una remera.</p>
+    <div class="card prose">
+      <div class="table-wrap" id="tabla-margenes"></div>
+    </div>
+  </section>
+
+  <section id="fuentes">
+    <h2>Supuestos, fuentes y método</h2>
+    <div class="card prose">
+      <h3>Cada número y de dónde sale</h3>
+      <p class="note">FLA: lo calcula el build con los informes. Fuente: cifra publicada. Inferencia: cuenta propia
+        con cifras publicadas. Supuesto: sin fuente directa. “Releído”: la cifra se volvió a leer en el original
+        al armar la página; el resto lo leyó la búsqueda y no se releyó.</p>
+      <div class="table-wrap" id="tabla-supuestos"></div>
+    </div>
+    <div class="card prose">
+      <h3>Cómo se arma la cuenta</h3>
+      <ul id="metodo"></ul>
+      <h3>Lo que no está en la cuenta</h3>
+      <ul>
+        <li><strong>Impuesto a las ventas.</strong> El precio de 95 dólares es sin impuesto; cada estado y ciudad
+          de EE. UU. suma el suyo en la caja.</li>
+        <li><strong>Rebajas, devoluciones y stock sin vender.</strong> La cuenta vende la remera a precio pleno.
+          La misma ficha tenía ese día colores a 66,50 y a 48 dólares, y las normas francesas de huella ambiental
+          suponen 15 % de prendas que no se venden. Cada remera rebajada sale de la ganancia de la marca.</li>
+        <li><strong>El nailon y el viaje de la peinada a Asia</strong> no tienen precio propio: quedan dentro de lo
+          que agrega el hilado.</li>
+        <li><strong>La finura.</strong> La peinada argentina promedia unas 23 micras y una remera para usar sobre
+          la piel lleva lana de 17,5 a 19,5. La cuenta usa el precio argentino porque es el punto de partida
+          pedido; el escenario de peinada fina muestra cuánto cambia.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p id="foot"></p>
+</footer>
+
+<script src="vendor/echarts.min.js"></script>
+<script src="cadena-data.js"></script>
+<script src="cadena.js"></script>
+</body>
+</html>

@@ -8,6 +8,8 @@ histórica (`site/historia.html`) con los
 EL 488 a EL 812: temporadas 1998/99 a 2025/26. La página `site/industria.html` responde qué se fabrica
 en el país con esa lana: etapa en que se exporta, consumo industrial interno, precio por kilo en cada
 etapa, comercio de hilados, telas y prendas de lana (UN Comtrade, 2000 en adelante) y quién industrializa.
+La página `site/cadena.html` sigue una remera de merino (Smartwool, 95 dólares) desde la peinada argentina, al
+precio de exportación de la FLA, hasta la tienda: cuánto agrega cada etapa y cuánto de eso es costo y ganancia.
 
 ## Ver el sitio
 
@@ -42,11 +44,16 @@ desconocido; el mensaje dice qué tabla falló. Un país nuevo se agrega en `COU
   orígenes de las importaciones del último año (`origenes-AAAA.json`).
 - `pipeline/industry.py` — consumo interno, hilados y tejidos de la FLA y lana peinada por año calendario
   → `industria.html`, junto con lo de `comtrade.py`.
-- `build.py` — corre todo y escribe `data/processed/` (para revisar), `site/data.js`, `site/historia-data.js`
-  y `site/industria-data.js`.
+- `data/cadena.json` — los supuestos de la remera (precio, peso, mermas, precios de cada etapa, aranceles,
+  márgenes de referencia), cada uno con su fuente, su tipo (fuente, inferencia o supuesto) y si se releyó en el
+  original. Se edita a mano; el build se detiene si a un parámetro le falta la fuente o sale de su rango.
+- `pipeline/chain.py` — el precio FLA de la peinada y `data/cadena.json` → la cadena de `cadena.html`: gramos
+  por etapa, valor de cada etapa, costos y ganancia, y los escenarios.
+- `build.py` — corre todo y escribe `data/processed/` (para revisar), `site/data.js`, `site/historia-data.js`,
+  `site/industria-data.js` y `site/cadena-data.js`.
 - `site/` — `index.html` y `app.js` (temporada actual), `historia.html` y `historia.js` (1998/99 en adelante),
-  `industria.html` y `industria.js` (lee también `historia-data.js`), `styles.css`; gráficos con ECharts,
-  incluido en `site/vendor/`.
+  `industria.html` y `industria.js` (lee también `historia-data.js`), `cadena.html` y `cadena.js`, `styles.css`;
+  gráficos con ECharts, incluido en `site/vendor/`.
 
 Para lana sucia, lavada y peinada la página de industria usa la FLA, no Comtrade: desde 2018 lo que
 Argentina informa a Comtrade queda por debajo de la FLA y de lo que declaran los compradores (la página

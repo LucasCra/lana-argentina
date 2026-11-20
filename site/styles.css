@@ -208,4 +208,10 @@ td { font-variant-numeric: tabular-nums; }
 .prose li { margin-bottom: 8px; }
 .prose a { color: var(--s1); }
 .foot { color: var(--muted); font-size: 12px; padding-top: 8px; padding-bottom: 40px; }
+td.wrap-cell { white-space: normal; text-align: left; min-width: 220px; }
+td.left { text-align: left; }
+td.name-cell { white-space: normal; min-width: 180px; }
+td.value-cell { white-space: normal; text-align: left; min-width: 150px; }
+td.source-cell { white-space: normal; text-align: left; min-width: 360px; }
+#tabla-supuestos { max-height: 640px; }
 .tag { font-size: 11px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; margin-left: 6px; }

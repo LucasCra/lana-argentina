@@ -6,8 +6,9 @@
 Writes data/processed/informes.json (every parsed table, for checking) and
 site/data.js (what the site draws) from the monthly issues in data/raw,
 data/processed/anuales.json and site/historia-data.js from the annual issues
-in data/raw/anuales, and site/industria-data.js from the annual issues plus
-the UN Comtrade files in data/raw/comercio. Stops with the failing check if
+in data/raw/anuales, site/industria-data.js from the annual issues plus
+the UN Comtrade files in data/raw/comercio, and site/cadena-data.js from the
+monthly tops price plus the assumptions in data/cadena.json. Stops with the failing check if
 any source does not add up; nothing is written in that case.
 """
 
@@ -20,6 +21,7 @@ from datetime import date
 from pathlib import Path
 
 from pipeline.annual import parse_annual, production_history
+from pipeline.chain import derive_chain, load_assumptions
 from pipeline.comtrade import derive_trade
 from pipeline.comtrade import fetch as fetch_trade
 from pipeline.derive import derive
@@ -32,6 +34,7 @@ ROOT = Path(__file__).parent
 RAW = ROOT / "data" / "raw"
 ANNUAL = RAW / "anuales"
 TRADE = RAW / "comercio"
+CHAIN = ROOT / "data" / "cadena.json"
 FIRST_TRADE_YEAR = 2000
 
 
@@ -75,6 +78,12 @@ def main() -> int:
         print(f"ERROR {TRADE.name}: {error}", file=sys.stderr)
         return 1
     industry["generado"] = data["generado"]
+    try:
+        chain = derive_chain(data, load_assumptions(CHAIN))
+    except ReportError as error:
+        print(f"ERROR {CHAIN.name}: {error}", file=sys.stderr)
+        return 1
+    chain["generado"] = data["generado"]
 
     processed = ROOT / "data" / "processed"
     processed.mkdir(parents=True, exist_ok=True)
@@ -83,6 +92,7 @@ def main() -> int:
     _write_js(ROOT / "site" / "data.js", "DATA", data)
     _write_js(ROOT / "site" / "historia-data.js", "HISTORIA", history)
     _write_js(ROOT / "site" / "industria-data.js", "INDUSTRIA", industry)
+    _write_js(ROOT / "site" / "cadena-data.js", "CADENA", chain)
     first, last = reports[0]["numero"], reports[-1]["numero"]
     print(f"{len(reports)} informes: EL {first}–{last} -> site/data.js")
     seasons = history["temporadas"]
@@ -95,6 +105,7 @@ def main() -> int:
         f"{len(trade_years)} años de Comtrade: {trade_years[0]['anio']}–{trade_years[-1]['anio']}"
         " -> site/industria-data.js"
     )
+    print(f"remera de {chain['producto']['nombre']} -> site/cadena-data.js")
     for season in seasons:
         for warning in season["avisos"]:
             print(f"aviso {season['temporada']}: {warning}")

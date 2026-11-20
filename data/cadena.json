@@ -1,0 +1,274 @@
+{
+  "_nota": "Supuestos de la página cadena.html. Cada parámetro dice de dónde sale: tipo fla (lo calcula el build con los informes), fuente (cifra publicada), inferencia (cuenta propia con cifras publicadas) o supuesto (sin fuente directa). releido: true si la cifra se volvió a leer en el original al armar la página; false si sólo la leyó la búsqueda. Fechas de lectura: 2026-11-19.",
+  "producto": {
+    "nombre": "Smartwool Men's Merino Short Sleeve Tee",
+    "estilo": "SW016948",
+    "url": "https://www.smartwool.com/en-us/products/mens-merino-short-sleeve-tee-sw016948",
+    "leido": "2026-11-19",
+    "composicion": "88% lana merino, 12% nailon reciclado",
+    "cita": "Made in Vietnam: 88% Merino Wool, 12% Recycled Nylon",
+    "hilado": "Core Spun: lana merino enrollada sobre un alma de nailon",
+    "origen": "Vietnam",
+    "duenio": "VF Corporation (la incluye en “All Other” en su 10-Q del 28 de octubre de 2026)",
+    "duenio_url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000135/vfc-20260926.htm"
+  },
+  "parametros": {
+    "precio_tienda_usd": {
+      "nombre": "Precio de lista en la tienda de la marca",
+      "valor": 95.0,
+      "unidad": "USD",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "smartwool.com, ficha SW016948 (colores a precio pleno)",
+      "url": "https://www.smartwool.com/en-us/products/mens-merino-short-sleeve-tee-sw016948",
+      "fecha": "2026-11-19",
+      "nota": "Sin impuesto a las ventas. Ese día cuatro colores estaban a 66,50 y once colores viejos a 48 (lista anterior: 80)."
+    },
+    "precios_oferta_usd": {
+      "nombre": "Precios de oferta en la misma ficha",
+      "valor": [66.5, 48.0],
+      "unidad": "USD",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "smartwool.com, ficha SW016948",
+      "url": "https://www.smartwool.com/en-us/products/mens-merino-short-sleeve-tee-sw016948",
+      "fecha": "2026-11-19"
+    },
+    "lana_frac": {
+      "nombre": "Lana en la prenda",
+      "valor": 0.88,
+      "unidad": "fracción del peso",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "smartwool.com, ficha SW016948: “88% Merino Wool, 12% Recycled Nylon”",
+      "url": "https://www.smartwool.com/en-us/products/mens-merino-short-sleeve-tee-sw016948",
+      "fecha": "2026-11-19"
+    },
+    "peso_prenda_g": {
+      "nombre": "Peso de la remera",
+      "valor": 133,
+      "min": 102,
+      "max": 146,
+      "unidad": "g",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "REI, ficha del modelo anterior (87% lana): “Weight 4.7 ounces”, sin talle",
+      "url": "https://www.rei.com/product/233081/smartwool-merino-t-shirt-mens",
+      "fecha": "2026-11-19",
+      "nota": "La marca no publica el peso ni el gramaje de esta remera. Mínimo: GearJunkie, 3,6 oz medidas en talle M (posiblemente de 2021). Máximo: Icebreaker declara 146 g para su remera Merino 150 en talle M."
+    },
+    "merma_hilado": {
+      "nombre": "Fibra perdida al hilar la peinada",
+      "valor": 0.04,
+      "min": 0.02,
+      "max": 0.08,
+      "unidad": "fracción",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "Chaikin (UNSW), informe para ONUDI, 1970: “at least 4%” en hilandería peinada",
+      "url": "https://downloads.unido.org/ot/46/83/4683729/00001-10000_00886D.pdf",
+      "fecha": "1970-01-19",
+      "nota": "Mínimo: 2 % en el diagrama de Woolwise (Cottle y Wood, 2012). Máximo: supuesto; Chaikin dice que con lotes chicos puede ser bastante más."
+    },
+    "merma_tejido": {
+      "nombre": "Hilado perdido al tejer y terminar la tela",
+      "valor": 0.0545,
+      "min": 0.0545,
+      "max": 0.1,
+      "unidad": "fracción",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "Ecobalyse (gobierno de Francia), nota reglamentaria, 2025: tejido de punto 5,45 %, terminación 0 %",
+      "url": "https://affichage-environnemental.ecobalyse.beta.gouv.fr/notice-reglementaire-english.pdf",
+      "fecha": "2025-10-01",
+      "nota": "Valores por defecto, no propios de la lana. Máximo: supuesto, por la pérdida de peso en el teñido que no se encontró medida."
+    },
+    "merma_corte": {
+      "nombre": "Tela perdida al cortar y coser",
+      "valor": 0.15,
+      "min": 0.1,
+      "max": 0.25,
+      "unidad": "fracción",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "Ecobalyse, nota reglamentaria, 2025: remeras y polos 15 %",
+      "url": "https://affichage-environnemental.ecobalyse.beta.gouv.fr/notice-reglementaire-english.pdf",
+      "fecha": "2025-10-01",
+      "nota": "Lectra (2026): entre 10 % y 20 % en las salas de corte. Woolwise: hasta 25 % en tejido circular."
+    },
+    "peinada_fina": {
+      "nombre": "Peinada fina australiana de 18,5 µ (referencia para una remera de piel)",
+      "valor": [
+        { "fecha": "2026-06-19", "eur_kg": 19.31, "usd_eur": 1.1518 },
+        { "fecha": "2026-07-03", "eur_kg": 18.73, "usd_eur": 1.1417478260869562 }
+      ],
+      "unidad": "EUR/kg y USD por EUR",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "Borsa Merci di Vercelli, listino n.º 27 del 21 de julio de 2026 (promedios quincenales de la Associazione Nazionale Commercio Laniero); dólares al promedio mensual del BCE de junio y julio de 2026",
+      "url": "https://www.pno.camcom.it/sites/default/files/contenuto_redazione/Informazione%20economica/Listini%20prezzi/Prodotti%20agricoli/listino%2027%20del%2021%20luglio.pdf",
+      "fecha": "2026-07-21",
+      "nota": "Mismo listado: 19,5 µ a 17,14–17,53 €/kg; 23,5 µ a 13,10–13,27 €/kg; Sudamérica 25,5 µ a 8,10–8,15 €/kg. Icebreaker declara 18,9 µ para su remera 150; Smartwool no publica el micronaje."
+    },
+    "hilado_fino_usd_kg": {
+      "nombre": "Hilado peinado de merino extrafino",
+      "valor": 28.0,
+      "unidad": "USD/kg",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "Aviso de Shanghai Charmkey Textile en Made-in-China: 2/60 Nm, merino extrafino, FOB 28 USD/kg, pedido mínimo 10 kg",
+      "url": "https://www.made-in-china.com/products-search/hot-china-products/2_60nm_Merino_Wool_Yarn.html",
+      "fecha": "2026-11-19",
+      "nota": "Precio pedido en un aviso, sin micronaje. Comparación: Xinao, el mayor hilandero peinado chino, vendió su hilado a 163 yuanes/kg en promedio en 2025 (unos 22,7 USD/kg, todos los títulos)."
+    },
+    "materiales_usd": {
+      "nombre": "Materiales de una remera de merino según la marca que los publica",
+      "valor": 11.62,
+      "unidad": "USD por remera",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "Quince, ficha de su remera de manga corta 100 % merino: “Materials $11.62”",
+      "url": "https://www.quince.com/men/tech-merino-short-sleeve-tee",
+      "fecha": "2026-11-19",
+      "nota": "Es la única hoja de costos por prenda de una remera de merino que se encontró. Quince no publica peso, gramaje, micronaje ni país; dice que usa merino australiano extrafino."
+    },
+    "confeccion_usd": {
+      "nombre": "Confección (corte, costura y terminación)",
+      "valor": 2.7,
+      "unidad": "USD por remera",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "Quince, misma ficha: “Crafting Cost $2.70”",
+      "url": "https://www.quince.com/men/tech-merino-short-sleeve-tee",
+      "fecha": "2026-11-19",
+      "nota": "Quince no define el rubro; se lo toma como el pago al taller, con su margen."
+    },
+    "embalaje_usd": {
+      "nombre": "Embalaje",
+      "valor": 0.28,
+      "unidad": "USD por remera",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "Quince, misma ficha: “Packaging $0.28”",
+      "url": "https://www.quince.com/men/tech-merino-short-sleeve-tee",
+      "fecha": "2026-11-19"
+    },
+    "tela_catalogo_usd_kg": {
+      "nombre": "Tela de punto merino en avisos de fábricas (piso)",
+      "valor": 36.0,
+      "unidad": "USD/kg",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "Aviso de Zhangjiagang Yuanbo Textile en Made-in-China: jersey 100 % merino, 145–150 g/m², 36 USD/kg, pedido mínimo 300 kg",
+      "url": "https://knittedfabric888.en.made-in-china.com/product/EAYrmqzdqjcn/",
+      "fecha": "2026-11-19",
+      "nota": "Es el más barato de los avisos encontrados: otros piden 43 USD/kg (185 g/m²) u 11 USD por metro (unos 39–52 USD/kg). Ninguno declara micronaje."
+    },
+    "fob_alto_usd": {
+      "nombre": "Remera de merino terminada, precio pedido por fábricas (techo)",
+      "valor": 18.0,
+      "unidad": "USD por remera",
+      "tipo": "fuente",
+      "releido": false,
+      "fuente": "Aviso de Zhejiang Wensang Knitted Garment en Made-in-China: 15–18 USD, pedido mínimo 300",
+      "url": "https://jxwensang.en.made-in-china.com/product/yszmYCDdMuVN/",
+      "fecha": "2026-11-19",
+      "nota": "Otros avisos de remeras 100 % merino piden 15–16 USD (168 g/m², 1.000 a 3.000 unidades)."
+    },
+    "flete_usd": {
+      "nombre": "Flete y seguro de Vietnam a la tienda",
+      "valor": 0.5,
+      "min": 0.25,
+      "max": 1.0,
+      "unidad": "USD por remera",
+      "tipo": "supuesto",
+      "releido": false,
+      "fuente": "Sin fuente para esta ruta. Referencias: Asket declara 0,40 € de transporte en su polo de merino; Public Eye calcula 0,41 € de flete en un buzo de Zara (2019).",
+      "url": "https://www.asket.com/en-fr/mens-merino-wool-polo-black",
+      "fecha": "2026-11-19"
+    },
+    "arancel_nmf": {
+      "nombre": "Arancel general de EE. UU. (HTS 6109.90.80, remeras de punto de lana, manga corta)",
+      "valor": 0.16,
+      "unidad": "fracción del valor en aduana",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "USITC, Harmonized Tariff Schedule 2026, revisión 23: 6109.90.80 “Other”, general 16%",
+      "url": "https://hts.usitc.gov/search?query=6109.90.80",
+      "fecha": "2026-11-19",
+      "nota": "Las de manga larga van por 6109.90.15, al 5,6 %. Vietnam no tiene preferencia."
+    },
+    "arancel_301": {
+      "nombre": "Recargo de la Sección 301 a productos de Vietnam (trabajo forzoso)",
+      "valor": 0.125,
+      "unidad": "fracción del valor en aduana",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "USTR, 91 FR 47318 (28 de julio de 2026): 12,5 % a productos de Vietnam desde el 24 de julio de 2026, sumado al arancel general",
+      "url": "https://www.federalregister.gov/documents/2026/07/28/2026-15181/notice-of-actions-in-section-301-investigations-of-acts-policies-and-practices-of-various-economies",
+      "fecha": "2026-07-28",
+      "nota": "El anexo de exenciones no incluye la partida 6109. Está impugnado ante el Tribunal de Comercio Internacional (CIT), que no había fallado al 19 de noviembre de 2026. Los aranceles IEEPA cayeron el 20 de febrero de 2026."
+    },
+    "margen_hilado": {
+      "nombre": "Ganancia del hilandero (proxy)",
+      "valor": 0.12,
+      "unidad": "fracción de sus ventas",
+      "tipo": "inferencia",
+      "releido": false,
+      "fuente": "Zhejiang Xinao Textiles, memoria 2025: utilidad operativa 608,1 M de yuanes sobre 5.052,2 M (toda la empresa; el hilado peinado tiene 27,4 % de margen bruto)",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf",
+      "fecha": "2026-04-10"
+    },
+    "margen_tela": {
+      "nombre": "Ganancia de la tejeduría y tintorería (proxy)",
+      "valor": 0.079,
+      "unidad": "fracción de sus ventas",
+      "tipo": "inferencia",
+      "releido": false,
+      "fuente": "Shandong Nanshan Zhishang, memoria 2025: utilidad operativa 141,0 M de yuanes sobre 1.792,9 M (tela peinada plana, no de punto)",
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-04-16/ea67a89e-45fb-425d-913d-b162161a0864.PDF",
+      "fecha": "2026-04-16",
+      "nota": "Eclat (Taiwán, tela de punto y prendas) gana 18,7 % sobre ventas."
+    },
+    "margen_confeccion": {
+      "nombre": "Ganancia del taller de confección (proxy)",
+      "valor": 0.08,
+      "unidad": "fracción del precio FOB",
+      "tipo": "inferencia",
+      "releido": false,
+      "fuente": "Public Eye y Clean Clothes Campaign, “Squeezed Dry”, mayo de 2026: en una remera básica de Bangladesh, finanzas y ganancia son 8 % del FOB (ganancia neta, 3 %)",
+      "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf",
+      "fecha": "2026-05-01",
+      "nota": "Remera de algodón. Shenzhou, que teje y confecciona, gana cerca de 18,8 % sobre ventas."
+    },
+    "tienda_canada_goose": {
+      "nombre": "Venta directa de una marca premium: margen bruto, margen del canal y gastos centrales",
+      "valor": {
+        "dtc_margen_bruto": 0.767,
+        "dtc_margen_operativo": 0.39,
+        "gastos_corporativos_mcad": 447.0,
+        "ingresos_totales_mcad": 1528.2
+      },
+      "unidad": "fracciones de las ventas y millones de dólares canadienses",
+      "tipo": "inferencia",
+      "releido": true,
+      "fuente": "Canada Goose, Form 20-F del ejercicio cerrado el 29 de marzo de 2026: segmento DTC (tiendas propias y web) con 76,7 % de margen bruto y 39,0 % de margen operativo; gastos corporativos 447,0 M sobre ventas de 1.528,2 M",
+      "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm",
+      "fecha": "2026-05-20",
+      "nota": "VF no publica cifras de Smartwool. Canada Goose es la marca cotizada encontrada que separa la venta directa y sus gastos centrales."
+    }
+  },
+  "comparables": [
+    { "etapa": "Peinado", "empresa": "Chargeurs, segmento Luxury Fibers", "anio": "2025", "bruto": null, "operativo": 0.01, "nota": "Comercia lana y participa en la peinaduría de Trelew (Peinaduría Río Chubut) como negocio conjunto.", "url": "https://echanges.dila.gouv.fr/OPENDATA/AMF/ECO/2026/03/FCECO081285_20260319.pdf" },
+    { "etapa": "Peinado", "empresa": "Xinao, línea de peinada", "anio": "2025", "bruto": 0.0719, "operativo": null, "nota": "Sin margen operativo por línea.", "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf" },
+    { "etapa": "Hilado", "empresa": "Xinao (toda la empresa)", "anio": "2025", "bruto": 0.274, "operativo": 0.12, "nota": "Margen bruto del hilado peinado; el operativo es de toda la empresa y sale después de gastos financieros.", "url": "https://pdf.dfcfw.com/pdf/H2_AN202604091821091857_1.pdf" },
+    { "etapa": "Tela", "empresa": "Nanshan Zhishang (toda la empresa)", "anio": "2025", "bruto": 0.3298, "operativo": 0.079, "nota": "Margen bruto de la tela peinada; tela plana para sastrería, no de punto.", "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-04-16/ea67a89e-45fb-425d-913d-b162161a0864.PDF" },
+    { "etapa": "Tela y prenda", "empresa": "Eclat Textile", "anio": "2025", "bruto": 0.286, "operativo": 0.187, "nota": "Tela de punto (34 % de las ventas) y prendas (66 %), sobre todo sintéticas.", "url": "https://eclatglobal.s3.amazonaws.com/uploads/2026/05/2025_eclat_Annual-Report_en.pdf" },
+    { "etapa": "Confección", "empresa": "Shenzhou International", "anio": "2025", "bruto": 0.263, "operativo": 0.188, "nota": "Teje y confecciona; el operativo es bruto menos gastos de venta y administración.", "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033000295.pdf" },
+    { "etapa": "Confección", "empresa": "Remera básica de Bangladesh (Public Eye)", "anio": "2026", "bruto": null, "operativo": 0.08, "nota": "Finanzas y ganancia sobre el FOB; ganancia neta 3 %; salarios 12 %.", "url": "https://cleanclothes.org/file-repository/pe_ccc_report_squeezed_dry.pdf" },
+    { "etapa": "Marca", "empresa": "VF Corporation (toda la empresa)", "anio": "ejercicio 2026", "bruto": 0.548, "operativo": 0.06, "nota": "Dueña de Smartwool. 44 % de las ventas es directo al público; la publicidad es 9 % de las ventas.", "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm" },
+    { "etapa": "Marca", "empresa": "VF, segmento Outdoor", "anio": "ejercicio 2026", "bruto": 0.544, "operativo": 0.147, "nota": "The North Face y Timberland; Smartwool está en “All Other”, que no publica margen bruto.", "url": "https://www.sec.gov/Archives/edgar/data/103379/000010337926000030/vfc-20260328.htm" },
+    { "etapa": "Marca y tienda", "empresa": "Canada Goose, venta directa", "anio": "ejercicio 2026", "bruto": 0.767, "operativo": 0.39, "nota": "Antes de 447,0 M de gastos corporativos; la empresa entera gana 5,8 %.", "url": "https://www.sec.gov/Archives/edgar/data/1690511/000169051126000012/goos-20260329.htm" },
+    { "etapa": "Tienda", "empresa": "REI", "anio": "2025", "bruto": 0.431, "operativo": -0.014, "nota": "Cadena de tiendas de montaña; el alquiler va fuera del costo de mercadería.", "url": "https://public.cloud-dam.rei.com/api/public/content/25671793_rei-fy25-issued-financial-statements-2.pdf" }
+  ]
+}
