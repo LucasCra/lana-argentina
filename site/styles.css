@@ -19,6 +19,7 @@
   --s3: #1baf7a;
   --s4: #eda100;
   --s5: #e87ba4;
+  --s7: #6250d6; /* violet, the reference palette's slot 7 */
   --past: #b5b3ab;
   --empty: #ecebe6;
   --seq-1: #cde2fb;
@@ -66,6 +67,7 @@
     --s3: #199e70;
     --s4: #c98500;
     --s5: #d55181;
+    --s7: #9085e9;
     --past: #5e5d58;
     --empty: #262624;
     --seq-1: #184f95;
@@ -112,6 +114,7 @@
   --s3: #199e70;
   --s4: #c98500;
   --s5: #d55181;
+  --s7: #9085e9;
   --past: #5e5d58;
   --empty: #262624;
   --seq-1: #184f95;

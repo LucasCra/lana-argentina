@@ -218,6 +218,19 @@ def test_made_in_argentina_changes_only_the_duty(chain):
     }
 
 
+def test_factory_stages_add_up_to_the_factory(chain):
+    by_id = {s["id"]: s for s in chain["escenarios"]}
+    stages = ("hilado_usd", "tela_usd", "confeccion_usd")
+    for s in by_id.values():
+        assert sum(s[k] for k in stages) == pytest.approx(s["fabrica_usd"])
+    # The page charts only the rows that move a factory stage: the tops pass through at
+    # cost, and duty and sale price are downstream of the factory.
+    base = by_id["base"]
+    for id_ in ("peinada_actual", "peinada_fina", "sin_301", "hecha_argentina", "oferta_0"):
+        assert [by_id[id_][k] for k in stages] == pytest.approx([base[k] for k in stages])
+    assert by_id["fabrica_bajo"]["tela_usd"] < base["tela_usd"] < by_id["fabrica_alto"]["tela_usd"]
+
+
 def test_every_comparable_says_whether_it_was_reread(tmp_path):
     data = json.loads(ASSUMPTIONS.read_text())
     del data["comparables"][0]["releido"]

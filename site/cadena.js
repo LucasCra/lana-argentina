@@ -38,6 +38,10 @@
   const GROUPS = ["peinada", "fabrica", "importacion", "marca_tienda"];
   const GNAME = { peinada: "Peinada argentina", fabrica: "Hilado, tela y confección", importacion: "Flete y arancel", marca_tienda: "Marca y tienda" };
   const GSLOT = { peinada: "s1", fabrica: "s4", importacion: "s2", marca_tienda: "s5" };
+  // The factory's three stages. Hilado keeps the factory's yellow; violet and green are not
+  // used by the scenario chart above, so no colour there means something else.
+  const FSTAGES = ["hilado", "tela", "confeccion"];
+  const FSLOT = { hilado: "s4", tela: "s7", confeccion: "s3" };
   const TYPE = { fla: "FLA", fuente: "Fuente", inferencia: "Inferencia", supuesto: "Supuesto" };
 
   // ------------------------------------------------------------ formato
@@ -77,11 +81,12 @@
     C = {
       page: v("page"), surface: v("surface"), ink: v("ink"), ink2: v("ink-2"), muted: v("muted"),
       grid: v("grid"), axis: v("axis"), border: v("border"), past: v("past"), empty: v("empty"),
-      s1: v("s1"), s2: v("s2"), s3: v("s3"), s4: v("s4"), s5: v("s5"),
+      s1: v("s1"), s2: v("s2"), s3: v("s3"), s4: v("s4"), s5: v("s5"), s7: v("s7"),
     };
   }
   const cColor = (k) => C[CSLOT[k]];
   const gColor = (k) => C[GSLOT[k]];
+  const fColor = (k) => C[FSLOT[k]];
   const swatch = (c) =>
     `<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};margin:0 6px 2px 0;vertical-align:middle"></i>`;
 
@@ -331,7 +336,55 @@
         ]),
       }),
     },
+
+    fabrica: {
+      title: "Hilado, tela y confección en cada escenario",
+      sub: () => "Dólares por remera que agrega cada etapa de fábrica",
+      legend: () => FSTAGES.map((k) => ({ label: SNAME[k], color: fColor(k) })),
+      foot: "Sólo los escenarios que cambian lo que agregan las fábricas. En los demás es lo mismo que en el caso base: la peinada pasa a costo, y el arancel y el precio de venta vienen después de la fábrica.",
+      option() {
+        const rows = factoryRows();
+        const data = stacked(FSTAGES, rows, groupUsd, [0, 4, 4, 0], (r) => ({
+          show: true,
+          position: "right",
+          color: C.ink2,
+          fontSize: 11,
+          formatter: () => num(r.fabrica_usd, 2),
+        }));
+        return {
+          ...base(),
+          grid: { left: 8, right: 52, top: 8, bottom: 8, containLabel: true },
+          tooltip: {
+            ...axisTip(),
+            formatter: (ps) => {
+              const r = rows[ps[0].dataIndex];
+              const lines = FSTAGES.map((k) => `${swatch(fColor(k))}${SNAME[k]}: <b>${usd(groupUsd(r, k))}</b> · ${pct(groupUsd(r, k) / r.fabrica_usd)} de la fábrica`);
+              return `<b>${esc(r.nombre)}</b><br>${esc(r.cambio)}<br>${lines.join("<br>")}<br>Sale de la fábrica a <b>${usd(r.fob_usd)}</b>, con la peinada`;
+            },
+          },
+          xAxis: axisVal((v) => num(v)),
+          yAxis: axisCat(rows.map((r) => r.nombre), { inverse: true, axisLabel: { color: C.ink2, fontSize: 12 } }),
+          series: FSTAGES.map((k, i) => barSeries(SNAME[k], data[i], fColor(k), { barMaxWidth: 20 })),
+        };
+      },
+      table: () => ({
+        head: ["Escenario", "Qué cambia", "Hilado USD", "Tela USD", "Confección USD", "Fábrica USD", "Sale de la fábrica USD"],
+        rows: factoryRows().map((r) => [
+          r.nombre,
+          r.cambio,
+          ...FSTAGES.map((k) => num(groupUsd(r, k), 2)),
+          num(r.fabrica_usd, 2),
+          num(r.fob_usd, 2),
+        ]),
+      }),
+    },
   };
+
+  // The base case plus every scenario that moves at least one factory stage by a cent or more.
+  function factoryRows() {
+    const moves = (r) => FSTAGES.some((k) => Math.abs(groupUsd(r, k) - groupUsd(SC.base, k)) >= 0.005);
+    return D.escenarios.filter((r) => r.id === "base" || moves(r));
+  }
 
   function kiloRows() {
     const rows = [

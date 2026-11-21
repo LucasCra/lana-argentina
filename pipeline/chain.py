@@ -443,6 +443,7 @@ def _summary(id_: str, group: str, name: str, what: str, ladder: dict[str, Any])
         "peinada_g": ladder["masas"]["peinada_g"],
         "peinada_usd": s["peinada"]["vende_usd"],
         "fabrica_usd": factory,
+        **{f"{k}_usd": s[k]["agrega_usd"] for k in ("hilado", "tela", "confeccion")},
         "fob_usd": ladder["fob_usd"],
         "importacion_usd": s["importacion"]["agrega_usd"],
         "marca_tienda_usd": s["tienda"]["agrega_usd"],
