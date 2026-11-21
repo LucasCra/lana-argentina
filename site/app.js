@@ -287,19 +287,24 @@
       title: "Precio implícito por mes",
       sub: () => "Dólares por kilo limpio, todos los productos",
       legend: () => [
-        { label: "Total", color: C.ink, line: true },
+        { label: "Todos los productos", color: C.past, line: true },
         ...PRODUCTS.map((p) => ({ label: PNAME[p], color: pColor(p), line: true, series: PNAME[p] })),
       ],
       foot: () =>
-        "Ingreso de divisas del mes / toneladas limpias del mes. El punto gris es junio 2026 (ajuste anual); " +
-        "los puntos huecos son meses provisionales. Cuando julio 2026 se corrigió al alza, su precio bajó de 9,15 a 7,99. " +
-        "Las líneas por producto salen de la diferencia entre las tablas de temporada de informes consecutivos, porque la tabla mensual no reparte los dólares por producto. " +
-        "Julio 2025 a enero 2026 es un solo bloque, así que las líneas por producto empiezan en feb 26. " +
-        "Cada punto de producto puede absorber correcciones de la FLA a meses anteriores (por ejemplo, el bloque de sep 26 trae la corrección al alza de jul 26), " +
-        "por eso no coinciden exactamente con la línea del total.",
+        "Línea gris: ingreso de divisas del mes / toneladas limpias del mes; el punto oscuro es junio 2026 (ajuste anual) " +
+        "y los huecos son meses provisionales. Líneas de color: precio de cada producto, de la resta entre informes " +
+        "consecutivos (la tabla mensual no reparte dólares por producto). Empiezan en feb 26 y cada punto puede " +
+        "arrastrar correcciones de meses anteriores. Los botones de la leyenda muestran u ocultan cada producto.",
       height: "short",
       option() {
         const last = months.length - 1;
+        // Un punto sin vecinos no dibuja línea: sólo ése lleva símbolo.
+        const productData = (p) =>
+          priceByProduct.map((d, i) => {
+            const v = d[p] ?? null;
+            const alone = v != null && priceByProduct[i - 1]?.[p] == null && priceByProduct[i + 1]?.[p] == null;
+            return { value: v, symbol: alone ? "circle" : "none" };
+          });
         return {
           ...base(),
           tooltip: {
@@ -312,7 +317,7 @@
                 .map((p) => `${swatch(pColor(p), true)}${PNAME[p]}: ${perKg(priceByProduct[ps[0].dataIndex][p])}`)
                 .join("<br>");
               return (
-                `<b>${m.etiqueta}</b><br>${swatch(C.ink, true)}Total: ${perKg(m.usd_kg)}<br>${tons(m.total_t)} · ${usdM(m.ingresos_usd)}${provTip(m)}` +
+                `<b>${m.etiqueta}</b><br>${swatch(C.past, true)}Todos: ${perKg(m.usd_kg)}<br>${tons(m.total_t)} · ${usdM(m.ingresos_usd)}${provTip(m)}` +
                 (prods ? `<br>${prods}` : "")
               );
             },
@@ -321,36 +326,35 @@
           xAxis: axisCat(monthCats, { boundaryGap: false }),
           yAxis: axisVal((v) => num(v, 0), { scale: true }),
           series: [
-            ...PRODUCTS.map((p) =>
-              lineSeries(
-                PNAME[p],
-                priceByProduct.map((d) => d[p] ?? null),
-                pColor(p),
-                { symbolSize: 4, lineStyle: { width: 1.25, color: pColor(p) }, connectNulls: false },
-              ),
-            ),
             lineSeries(
               "USD/kg",
               months.map((m, i) => ({
                 value: m.usd_kg,
+                symbol: m.ajuste_anual || m.provisional ? "circle" : "none",
                 itemStyle: m.ajuste_anual
-                  ? { color: C.muted, borderColor: C.surface, borderWidth: 2 }
-                  : m.provisional
-                    ? { color: C.surface, borderColor: C.ink, borderWidth: 2 }
-                    : undefined,
+                  ? { color: C.ink2, borderColor: C.surface, borderWidth: 2 }
+                  : { color: C.surface, borderColor: C.past, borderWidth: 2 },
                 label:
                   i === last
                     ? {
                         show: true,
                         position: "top",
-                        color: C.ink,
+                        color: C.ink2,
                         fontWeight: 600,
                         formatter: () => `${num(m.usd_kg, 2)}${m.provisional ? " p" : ""}`,
                       }
                     : undefined,
               })),
-              C.ink,
-              { areaStyle: { color: C.ink, opacity: 0.08 } },
+              C.past,
+              { symbolSize: 7, lineStyle: { width: 3, color: C.past, cap: "round", join: "round" }, z: 1 },
+            ),
+            ...PRODUCTS.map((p) =>
+              lineSeries(PNAME[p], productData(p), pColor(p), {
+                symbolSize: 6,
+                itemStyle: { color: pColor(p), borderWidth: 0 },
+                connectNulls: false,
+                z: 2,
+              }),
             ),
           ],
         };
