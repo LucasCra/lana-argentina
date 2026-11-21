@@ -238,3 +238,47 @@ def test_every_comparable_says_whether_it_was_reread(tmp_path):
     path.write_text(json.dumps(data))
     with pytest.raises(ReportError, match="releido"):
         load_assumptions(path)
+
+
+def test_cotton_tee_runs_from_lint_to_the_shop_price(chain, assumptions):
+    cotton = chain["algodon"]
+    P = {k: p["valor"] for k, p in assumptions["algodon"]["parametros"].items()}
+    stages = cotton["etapas"]
+    assert sum(s["agrega_usd"] for s in stages) == pytest.approx(P["precio_tienda_usd"])
+    for before, after in zip(stages, stages[1:], strict=False):
+        assert after["compra_usd"] == pytest.approx(before["vende_usd"])
+    # The A Index is US cents per pound; the ladder works in dollars per kilo.
+    assert cotton["fibra"]["usd_kg"] == pytest.approx(P["indice_a"] / 100 * 2.20462262)
+    lint = _stages(cotton)["peinada"]
+    assert lint["vende_usd"] == pytest.approx(
+        cotton["masas"]["peinada_g"] / 1000 * cotton["fibra"]["usd_kg"]
+    )
+    # Lint pays no price difference: the factory gate is the cost sheet itself.
+    assert cotton["fabrica"]["central"] == pytest.approx(
+        P["materiales_usd"] + P["confeccion_usd"] + P["embalaje_usd"]
+    )
+    f = cotton["fabrica"]
+    assert f["bajo"] < f["central"] < f["alto"]
+
+
+def test_cotton_tee_shares_the_wool_tees_downstream_assumptions(chain):
+    W = {k: p["valor"] for k, p in chain["parametros"].items()}
+    cotton = chain["algodon"]
+    m = cotton["masas"]
+    assert m["tela_g"] * (1 - W["merma_corte"]) == pytest.approx(m["prenda_g"])
+    assert m["hilado_g"] * (1 - W["merma_tejido"]) == pytest.approx(m["tela_g"])
+    s = _stages(cotton)
+    duty = next(p["usd"] for p in s["importacion"]["partes"] if p["id"] == "arancel")
+    assert duty == pytest.approx(s["confeccion"]["vende_usd"] * (0.165 + 0.125))
+    assert s["importacion"]["agrega_usd"] - duty == pytest.approx(W["flete_usd"])
+    shop = next(p["usd"] for p in s["tienda"]["partes"] if p["id"] == "tienda")
+    assert shop / cotton["precio_usd"] == pytest.approx(chain["tienda"]["tienda"])
+
+
+def test_every_cotton_assumption_names_its_source(tmp_path):
+    data = json.loads(ASSUMPTIONS.read_text())
+    del data["algodon"]["parametros"]["hilado_usd_kg"]["url"]
+    path = tmp_path / "cadena.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(ReportError, match="algodon.hilado_usd_kg"):
+        load_assumptions(path)

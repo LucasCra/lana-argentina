@@ -426,5 +426,183 @@
       "url": "https://public.cloud-dam.rei.com/api/public/content/25671793_rei-fy25-issued-financial-statements-2.pdf",
       "releido": false
     }
-  ]
+  ],
+  "algodon": {
+    "_nota": "Una remera de algodón de marca premium con la misma cuenta. Los parámetros que no están acá (mermas de tejido y de corte, flete, ganancia del taller, gastos de tienda y de marca) son los de la remera de merino. Fechas de lectura: 2026-11-21.",
+    "producto": {
+      "nombre": "Patagonia Men's Daily Tee",
+      "estilo": "37877",
+      "url": "https://www.patagonia.com/product/mens-daily-tee/37877.html",
+      "leido": "2026-11-21",
+      "composicion": "100 % algodón orgánico (Regenerative Organic Certified)",
+      "cita": "100% Regenerative Organic Certified® cotton jersey",
+      "origen": "Perú"
+    },
+    "parametros": {
+      "precio_tienda_usd": {
+        "nombre": "Precio de lista en la tienda de la marca",
+        "valor": 55.0,
+        "unidad": "USD",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "patagonia.com, ficha 37877 (color New Navy)",
+        "url": "https://www.patagonia.com/product/mens-daily-tee/37877.html",
+        "fecha": "2026-11-21",
+        "nota": "Sin impuesto a las ventas."
+      },
+      "algodon_frac": {
+        "nombre": "Algodón en la prenda",
+        "valor": 1.0,
+        "unidad": "fracción del peso",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "patagonia.com, ficha 37877: “100% Regenerative Organic Certified® cotton jersey”",
+        "url": "https://www.patagonia.com/product/mens-daily-tee/37877.html",
+        "fecha": "2026-11-21"
+      },
+      "peso_prenda_g": {
+        "nombre": "Peso de la remera",
+        "valor": 173,
+        "unidad": "g",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "patagonia.com, ficha 37877: “Weight 173 g (6.1 oz)”, sin talle",
+        "url": "https://www.patagonia.com/product/mens-daily-tee/37877.html",
+        "fecha": "2026-11-21",
+        "nota": "Según la búsqueda, la ficha da 4,7 oz para la tela del cuerpo, unos 159 g/m² si son onzas por yarda cuadrada."
+      },
+      "indice_a": {
+        "nombre": "Algodón en fibra: índice A de Cotlook",
+        "valor": 87.35,
+        "unidad": "centavos de dólar por libra",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "USDA AMS, Weekly Cotton Market Review, vol. 108 n.º 16 (20 de noviembre de 2026): “Far Eastern A Index”, provisto por Cotton Outlook, 19 de noviembre de 2026",
+        "url": "https://s3.amazonaws.com/barchart-news-store-prod/external_links/USDA/20261120-cnwwcmr.pdf",
+        "fecha": "2026-11-19",
+        "nota": "Algodón upland sin hilar, puesto en puertos del Lejano Oriente; según Cotlook (leído en la búsqueda), promedio de las cinco cotizaciones más baratas de los principales orígenes. El texto del PDF perdió el formato de la tabla: el día se asignó porque el 17 da 89,30, como el sitio de Cotlook en la búsqueda, y la baja de 2,50 del 19 sigue a la de los futuros del 18. Esa semana: 90,80 (13), 91,05 (16), 89,30 (17) y 89,85 (18). Es algodón convencional; esta remera es orgánica, que se paga más: la fibra es un piso."
+      },
+      "merma_hilado": {
+        "nombre": "Fibra perdida al hilar (abrir, cardar y peinar)",
+        "valor": 0.213,
+        "min": 0.12,
+        "max": 0.33,
+        "unidad": "fracción",
+        "tipo": "inferencia",
+        "releido": false,
+        "fuente": "Cotton Incorporated y thinkstep, LCA Update of Cotton Fiber and Fabric Life Cycle Inventory (2017), tabla 7-3, hilado para remeras: 1.690 kg de fibra dan 1.330 kg de hilado",
+        "url": "https://cottontoday.cottoninc.com/wp-content/uploads/2019/11/2016-LCA-Full-Report-Update.pdf",
+        "fecha": "2017-03-17",
+        "nota": "Promedio de hilanderías, casi todas de hilado peinado. Mínimo: 12 % de Ecobalyse (2025) para cualquier fibra natural. Máximo: 33 %, el rinde más bajo de un hilado peinado (67 a 75 %) según Kumar (2014), citado en Wikipedia. La lana pierde mucho menos al hilar porque la peinada llega ya cardada y peinada."
+      },
+      "hilado_usd_kg": {
+        "nombre": "Hilado de algodón 32S de anillo para tejido de punto",
+        "valor": 3.58,
+        "unidad": "USD/kg",
+        "tipo": "fuente",
+        "releido": false,
+        "fuente": "SunSirs, precio del hilado de algodón 32S en China: 24.000 yuanes por tonelada el 21 de noviembre de 2026",
+        "url": "https://www.sunsirs.com/commodity-price/petail-Cotton-yarn-1258.html",
+        "fecha": "2026-11-21",
+        "nota": "A 6,7118 yuanes por dólar (fijación del Banco Popular de China del 18 de noviembre de 2026, según Mitrade). La página no dice si es cardado o peinado ni si incluye el IVA chino. Un aviso de hilado peinado Ne 30/1 teñido pide 4,32 a 5,00 USD/kg (Made-in-China)."
+      },
+      "materiales_usd": {
+        "nombre": "Materiales de una remera de algodón según la marca que los publica",
+        "valor": 2.72,
+        "unidad": "USD por remera",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "Quince, ficha de su remera 100 % algodón Pima con bolsillo (170 g/m²): “Materials $2.72”",
+        "url": "https://www.quince.com/men/men-s-luxe-touch-premium-pocket-tee",
+        "fecha": "2026-11-21",
+        "nota": "Es la hoja del color que abre la ficha; según la búsqueda cambia con el color y el talle (materiales de 2,48 a 3,25) y la remera se hace en India, Vietnam o Perú. Las remeras lisas de Quince no tienen hoja; la de algodón orgánico de 345 g/m² dice materiales 4,55, confección 1,85 y embalaje 0,40."
+      },
+      "confeccion_usd": {
+        "nombre": "Confección (corte, costura y terminación)",
+        "valor": 1.16,
+        "unidad": "USD por remera",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "Quince, misma ficha: “Crafting Cost $1.16”",
+        "url": "https://www.quince.com/men/men-s-luxe-touch-premium-pocket-tee",
+        "fecha": "2026-11-21"
+      },
+      "embalaje_usd": {
+        "nombre": "Embalaje",
+        "valor": 0.12,
+        "unidad": "USD por remera",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "Quince, misma ficha: “Packaging $0.12”",
+        "url": "https://www.quince.com/men/men-s-luxe-touch-premium-pocket-tee",
+        "fecha": "2026-11-21"
+      },
+      "tela_catalogo_usd_kg": {
+        "nombre": "Tela de punto de algodón en avisos de fábricas (piso)",
+        "valor": 6.18,
+        "unidad": "USD/kg",
+        "tipo": "fuente",
+        "releido": false,
+        "fuente": "Aviso de Fujian Suifu Textile en Made-in-China: jersey 100 % algodón teñido, 170 g/m², hilado 26s, 6,18 USD/kg desde 3.000 kg",
+        "url": "https://suifutextile.en.made-in-china.com/product/vrkpXmSTXbhc/China-Light-Weight-170GSM-26s-Active-Dyed-Knitted-100-Cotton-Single-Jersey-Fabric-for-T-Shirt-Dress.html",
+        "fecha": "2026-11-21",
+        "nota": "6,38 USD/kg de 100 a 999 kg. Un aviso más barato (3,50 USD/kg, 150 g/m²) quedó afuera: pide menos que el hilado y no dice si la tela está teñida."
+      },
+      "fob_alto_usd": {
+        "nombre": "Remera de algodón terminada, precio pedido por fábricas (techo)",
+        "valor": 7.98,
+        "unidad": "USD por remera",
+        "tipo": "fuente",
+        "releido": false,
+        "fuente": "Aviso de Guangzhou Fengrong en Made-in-China: remera 100 % algodón peinado de 305 g, 7,98 USD de 50 a 499 unidades",
+        "url": "https://r-shemiste.en.made-in-china.com/product/epXRSotbfCcP/China-Men-s-305g-Heavyweight-Combed-100-Cotton-T-Shirt-Flexible-Customization-Structured-Fit-Casual-Summer-Short-Sleeve.html",
+        "fecha": "2026-11-21",
+        "nota": "Es el precio más alto de un aviso con la remera especificada. Desde 1.000 unidades, las remeras de algodón peinado de 240 a 350 g piden de 2,90 a 6,70 USD."
+      },
+      "arancel_nmf": {
+        "nombre": "Arancel general de EE. UU. (HTS 6109.10.00, remeras de punto de algodón)",
+        "valor": 0.165,
+        "unidad": "fracción del valor en aduana",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "USITC, Harmonized Tariff Schedule 2026, revisión 23: 6109.10.00 “Of cotton”, general 16.5%",
+        "url": "https://hts.usitc.gov/search?query=6109.10.00",
+        "fecha": "2026-11-21",
+        "nota": "Perú tiene preferencia (“Free … PE”, acuerdo comercial EE. UU.–Perú) si la remera cumple las reglas de origen, que no se revisaron; la cuenta no la supone."
+      },
+      "arancel_301": {
+        "nombre": "Recargo de la Sección 301 a productos de Perú (trabajo forzoso)",
+        "valor": 0.125,
+        "unidad": "fracción del valor en aduana",
+        "tipo": "fuente",
+        "releido": true,
+        "fuente": "USITC, Harmonized Tariff Schedule 2026, revisión 23: 9903.05.63, productos de Perú, “+ 12.5%” sobre la tasa general y sobre la preferencial; USTR, acción final de la Sección 301, desde el 24 de julio de 2026",
+        "url": "https://hts.usitc.gov/search?query=9903.05.63",
+        "fecha": "2026-11-21",
+        "nota": "Según la búsqueda, las exenciones del aviso de la USTR no incluyen el capítulo 61 para Perú."
+      },
+      "margen_hilado": {
+        "nombre": "Ganancia del hilandero de algodón (proxy)",
+        "valor": 0.061,
+        "unidad": "fracción de sus ventas",
+        "tipo": "inferencia",
+        "releido": false,
+        "fuente": "Texhong International, memoria 2025: utilidad operativa 1.383,6 M de yuanes sobre ventas de 22.715,6 M (toda la empresa)",
+        "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0421/2026042100356.pdf",
+        "fecha": "2026-04-21",
+        "nota": "El hilado es 80 % de sus ventas, sobre todo hilado con alma, no de algodón puro. Nitin Spinners (India) gana cerca de 9,5 % de sus ventas (ejercicio cerrado en marzo de 2026, cuenta propia)."
+      },
+      "margen_tela": {
+        "nombre": "Ganancia de la tejeduría y tintorería de punto (proxy)",
+        "valor": 0.028,
+        "unidad": "fracción de sus ventas",
+        "tipo": "inferencia",
+        "releido": false,
+        "fuente": "Pacific Textiles, resultados del ejercicio cerrado el 31 de marzo de 2026: utilidad operativa 139,9 M de dólares de Hong Kong sobre ventas de 5.014,0 M",
+        "url": "https://www.ir-cloud.com/hongkong/01382/announce/759/EN/EW01382ARA25_NUc6AJMbNtPG.pdf",
+        "fecha": "2026-06-25",
+        "nota": "Tela de punto de algodón y sintética. El ejercicio anterior ganó 4,0 %."
+      }
+    }
+  }
 }

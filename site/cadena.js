@@ -153,23 +153,26 @@
   // ------------------------------------------------------------ gráficos
 
   // La cascada: cada etapa arranca donde terminó la anterior; la última barra es el precio entero.
-  const cascadeRows = () => [
-    ...ST.map((s) => ({ name: SNAME[s.id], base: s.compra_usd, stage: s })),
-    { name: "Precio en la tienda", base: 0, stage: null },
-  ];
-  const classUsd = (row, k) =>
-    row.stage
-      ? sum(row.stage.partes.filter((p) => p.clase === k).map((p) => p.usd))
-      : sum(ST.flatMap((s) => s.partes.filter((p) => p.clase === k).map((p) => p.usd)));
-
-  const SPECS = {
-    cascada: {
-      title: () => `De ${num(S.peinada.vende_usd, 2)} a ${num(price, 2)} dólares`,
+  // Sirve para las dos remeras: `chain` trae etapas, precio y rango de fábrica; `names` cambia los
+  // nombres que no son los de la lana y da la nota al pie.
+  function cascadeSpec(chain, names) {
+    const stages = chain.etapas;
+    const total = chain.precio_usd;
+    const sname = { ...SNAME, ...names.etapas };
+    const pname = { ...PNAME, ...names.partes };
+    const cname = { ...CNAME, ...names.clases };
+    const shareOf = (v) => pct(v / total, 1);
+    const cascadeRows = () => [
+      ...stages.map((s) => ({ name: sname[s.id], base: s.compra_usd, stage: s })),
+      { name: "Precio en la tienda", base: 0, stage: null },
+    ];
+    const classUsd = (row, k) =>
+      sum((row.stage ? [row.stage] : stages).flatMap((s) => s.partes.filter((p) => p.clase === k).map((p) => p.usd)));
+    return {
+      title: () => `De ${num(stages[0].vende_usd, 2)} a ${num(total, 2)} dólares`,
       sub: () => "Lo que agrega cada etapa a una remera y en qué se va, en dólares por remera",
-      legend: () => CLASSES.map((k) => ({ label: CNAME[k], color: cColor(k) })),
-      foot: () =>
-        `Cada barra empieza donde terminó la anterior. Las etapas de fábrica (hilado, tela y confección) son las menos seguras: según la fuente, ` +
-        `la remera sale de la fábrica a entre ${num(D.fabrica.bajo, 2)} y ${num(D.fabrica.alto, 2)} USD (caso central, ${num(D.fabrica.central, 2)}). Ver “Qué cambia si cambia un supuesto”.`,
+      legend: () => CLASSES.map((k) => ({ label: cname[k], color: cColor(k) })),
+      foot: () => names.foot(chain.fabrica),
       height: "tall",
       option() {
         const rows = cascadeRows();
@@ -178,7 +181,7 @@
           position: "top",
           color: C.ink2,
           fontSize: 11,
-          formatter: () => (r.stage ? `+${num(r.stage.agrega_usd, 2)}` : num(price, 2)),
+          formatter: () => (r.stage ? `+${num(r.stage.agrega_usd, 2)}` : num(total, 2)),
         });
         const data = stacked(CLASSES, rows, classUsd, [4, 4, 0, 0], label);
         return {
@@ -189,14 +192,14 @@
             formatter: (ps) => {
               const r = rows[ps[0].dataIndex];
               if (!r.stage) {
-                const lines = CLASSES.map((k) => `${swatch(cColor(k))}${CNAME[k]}: <b>${usd(classUsd(r, k))}</b> · ${share(classUsd(r, k))}`);
-                return `<b>Precio en la tienda: ${usd(price)}</b><br>${lines.join("<br>")}`;
+                const lines = CLASSES.map((k) => `${swatch(cColor(k))}${cname[k]}: <b>${usd(classUsd(r, k))}</b> · ${shareOf(classUsd(r, k))}`);
+                return `<b>Precio en la tienda: ${usd(total)}</b><br>${lines.join("<br>")}`;
               }
               const s = r.stage;
-              const lines = s.partes.map((p) => `${swatch(cColor(p.clase))}${PNAME[p.id]}: <b>${usd(p.usd)}</b>`);
+              const lines = s.partes.map((p) => `${swatch(cColor(p.clase))}${pname[p.id]}: <b>${usd(p.usd)}</b>`);
               return (
-                `<b>${SNAME[s.id]}</b><br>Compra: ${usd(s.compra_usd)} · vende: <b>${usd(s.vende_usd)}</b><br>` +
-                `Agrega: <b>${usd(s.agrega_usd)}</b> · ${share(s.agrega_usd)} del precio<br>${lines.join("<br>")}`
+                `<b>${sname[s.id]}</b><br>Compra: ${usd(s.compra_usd)} · vende: <b>${usd(s.vende_usd)}</b><br>` +
+                `Agrega: <b>${usd(s.agrega_usd)}</b> · ${shareOf(s.agrega_usd)} del precio<br>${lines.join("<br>")}`
               );
             },
           },
@@ -216,15 +219,31 @@
               itemStyle: { color: "transparent" },
               tooltip: { show: false },
             },
-            ...CLASSES.map((k, i) => barSeries(CNAME[k], data[i], cColor(k))),
+            ...CLASSES.map((k, i) => barSeries(cname[k], data[i], cColor(k))),
           ],
         };
       },
       table: () => ({
         head: ["Etapa", "Compra USD", "Agrega USD", "Vende USD", "% del precio"],
-        rows: ST.map((s) => [SNAME[s.id], num(s.compra_usd, 2), num(s.agrega_usd, 2), num(s.vende_usd, 2), share(s.agrega_usd)]),
+        rows: stages.map((s) => [sname[s.id], num(s.compra_usd, 2), num(s.agrega_usd, 2), num(s.vende_usd, 2), shareOf(s.agrega_usd)]),
       }),
-    },
+    };
+  }
+
+  const SPECS = {
+    cascada: cascadeSpec(D, {
+      foot: (f) =>
+        `Cada barra empieza donde terminó la anterior. Las etapas de fábrica (hilado, tela y confección) son las menos seguras: según la fuente, ` +
+        `la remera sale de la fábrica a entre ${num(f.bajo, 2)} y ${num(f.alto, 2)} USD (caso central, ${num(f.central, 2)}). Ver “Qué cambia si cambia un supuesto”.`,
+    }),
+    algodon: cascadeSpec(D.algodon, {
+      etapas: { peinada: "Algodón en fibra" },
+      partes: { peinada: "Algodón" },
+      clases: { materia: "Algodón (índice A)" },
+      foot: (f) =>
+        `Cada barra empieza donde terminó la anterior. Las etapas de fábrica son las menos seguras: según la fuente, la remera sale de la fábrica a entre ` +
+        `${num(f.bajo, 2)} y ${num(f.alto, 2)} USD (caso central, ${num(f.central, 2)}). Mermas de tejido y de corte, flete, ganancia del taller y gastos de tienda y de marca son los de la remera de merino.`,
+    }),
 
     kilo: {
       title: "Cuánto vale un kilo en cada etapa",
@@ -536,6 +555,21 @@
       `<strong>La finura.</strong> La FLA no publica el precio de la peinada por micronaje. El ${pct(tops.cerrada.fina_pct)} de la exportada en ${tops.cerrada.temporada} es fina (hasta 24,5 micras), ` +
       `pero una remera para usar sobre la piel lleva lana más fina. La cuenta usa el precio promedio porque es el punto de partida pedido; el escenario de peinada fina muestra cuánto cambia.`;
 
+    const A = D.algodon;
+    const AS = Object.fromEntries(A.etapas.map((s) => [s.id, s]));
+    const AP = A.parametros;
+    const fibre = AS.peinada.vende_usd;
+    document.getElementById("algodon-lede").innerHTML =
+      `La misma cuenta para una remera de algodón de una marca premium: la ${link(A.producto.url, A.producto.nombre)}, ${esc(A.producto.composicion)}, ` +
+      `hecha en ${esc(A.producto.origen)}, de ${grams(A.masas.prenda_g)}, a ${usd(A.precio_usd)} en la tienda de la marca en EE. UU. (leído el ${longDate(A.producto.leido)}). ` +
+      `El algodón entra al índice A de Cotlook del ${longDate(AP.indice_a.fecha)}: ${num(A.fibra.centavos_lb, 2)} centavos de dólar por libra, ${perKg(A.fibra.usd_kg)}. ` +
+      `No es lo mismo que la peinada: es fibra sin hilar puesta en puertos de Asia, que la hilandería abre, carda y casi siempre peina, así que pierde ${pct(AP.merma_hilado.valor)} al hilar ` +
+      `(la peinada, ${pct(P.merma_hilado.valor)}). La remera compra ${grams(A.masas.peinada_g)} de algodón: <strong>${usd(fibre)}, ${pct(fibre / A.precio_usd, 1)} del precio</strong>, ` +
+      `contra ${share(S.peinada.vende_usd)} de la lana en la remera de merino. El índice es algodón convencional; el orgánico se paga más, así que esa barra es un piso. ` +
+      `La fábrica sale de la hoja de costos de Quince para una remera de algodón Pima de 170 g/m²: ${usd(A.fabrica.central)} en la puerta de la fábrica. ` +
+      `Arancel: ${pct(A.arancel.nmf, 1)} general y ${pct(A.arancel.s301, 1)} de recargo a Perú; si la remera califica para el acuerdo comercial con Perú, paga sólo el recargo, ${usd(A.arancel.ahorro_tlc_usd)} menos. ` +
+      `Marca y tienda se llevan ${pct(AS.tienda.agrega_usd / A.precio_usd, 1)} del precio (${share(S.tienda.agrega_usd)} en la de merino).`;
+
     document.getElementById("kilos-lede").textContent =
       `Una remera de ${grams(M.prenda_g)} tiene ${grams(M.lana_prenda_g)} de lana. Para llegar a ella hace falta comprar ${grams(M.peinada_g)} de peinada: ` +
       `en cada etapa se pierde algo de fibra. El peso de la remera es el supuesto más débil de la cuenta: la marca no lo publica y las mediciones van de ` +
@@ -635,6 +669,7 @@
       return v.map((q) => `${num(q.eur_kg, 2)} €/kg el ${longDate(q.fecha)} (${num(q.eur_kg * q.usd_eur, 2)} USD)`).join("; ");
     if (key === "tienda_canada_goose")
       return `margen bruto ${pct(v.dtc_margen_bruto, 1)}; margen del canal ${pct(v.dtc_margen_operativo, 1)}; gastos corporativos ${num(v.gastos_corporativos_mcad, 1)} M de ${num(v.ingresos_totales_mcad, 1)} M`;
+    if (key === "indice_a") return `${num(v, 2)} centavos por libra (${perKg(D.algodon.fibra.usd_kg)})`;
     if (Array.isArray(v)) return v.map((x) => usd(x)).join(" y ");
     if (p.unidad.startsWith("fracción")) return pct(v, v < 0.1 ? 2 : 1);
     if (p.unidad === "g") return grams(v);
@@ -647,16 +682,18 @@
     const fla = `<tr><td class="name-cell">Peinada argentina, ${esc(tops.cerrada.temporada)}</td><td class="value-cell">${perKg(tops.cerrada.usd_kg)}</td><td>–</td><td><span class="tag">FLA</span></td><td>build</td>` +
       `<td class="source-cell">Ingresos sobre toneladas limpias de peinada del informe EL ${tops.cerrada.numero}. ${esc(tops.actual.temporada)} hasta ${monthName(tops.actual.hasta)}: ${perKg(tops.actual.usd_kg)}` +
       `${tops.actual.provisionales.length ? ` (${monthList(tops.actual.provisionales)}, provisorios)` : ""}.</td></tr>`;
-    const rows = Object.entries(P).map(([key, p]) => {
+    const row = ([key, p]) => {
       const note = p.nota ? ` ${esc(p.nota)}` : "";
       return (
         `<tr><td class="name-cell">${esc(p.nombre)}</td><td class="value-cell">${value(key, p)}</td><td>${range(key, p)}</td>` +
         `<td><span class="tag">${TYPE[p.tipo]}</span></td><td>${p.releido ? "sí" : "no"}</td>` +
         `<td class="source-cell">${link(p.url, p.fuente)}${note}</td></tr>`
       );
-    });
-    document.getElementById("tabla-supuestos").innerHTML =
-      `<table><thead><tr><th>Parámetro</th><th>Valor</th><th>Rango</th><th>Tipo</th><th>Releído</th><th>Fuente y nota</th></tr></thead><tbody>${fla}${rows.join("")}</tbody></table>`;
+    };
+    const table = (rows) =>
+      `<table><thead><tr><th>Parámetro</th><th>Valor</th><th>Rango</th><th>Tipo</th><th>Releído</th><th>Fuente y nota</th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById("tabla-supuestos").innerHTML = table(fla + Object.entries(P).map(row).join(""));
+    document.getElementById("tabla-supuestos-algodon").innerHTML = table(Object.entries(D.algodon.parametros).map(row).join(""));
   }
 
   function renderMethod() {
@@ -705,7 +742,9 @@
     clearTimeout(pending);
     pending = setTimeout(() => {
       Object.values(instances).forEach((i) => i.resize());
-      render("cascada"); // the axis labels change with the width
+      // the axis labels change with the width
+      render("cascada");
+      render("algodon");
     }, 120);
   });
 })();

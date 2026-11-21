@@ -54,7 +54,9 @@ FACTORY = ("bajo", "central", "alto")
 def load_assumptions(path: Path) -> dict[str, Any]:
     """Read data/cadena.json and check that every parameter says where it comes from."""
     data = json.loads(path.read_text())
-    for key, p in data["parametros"].items():
+    params = [*data["parametros"].items()]
+    params += [(f"algodon.{k}", p) for k, p in data["algodon"]["parametros"].items()]
+    for key, p in params:
         if p["tipo"] not in TYPES:
             raise ReportError(f"{key}: tipo desconocido {p['tipo']!r}")
         if p["tipo"] != "supuesto" and not (p.get("fuente") and p.get("url")):
@@ -223,6 +225,69 @@ def derive_chain(monthly: dict[str, Any], assumptions: dict[str, Any]) -> dict[s
         "rangos": _ranges(summaries, base["precio"]),
         "parametros": P,
         "comparables": assumptions["comparables"],
+        "algodon": _cotton(assumptions),
+    }
+
+
+LB_PER_KG = 2.20462262
+
+
+def _cotton(assumptions: dict[str, Any]) -> dict[str, Any]:
+    """The same ladder for a premium cotton tee, from lint at the Cotlook A Index.
+
+    The ladder keeps the wool tee's stage ids: its first stage ("peinada") is the
+    lint the spinner buys, and the fibre share is cotton's. Lint is priced
+    delivered to Asian ports, the same for every spinner, so nothing is passed
+    through at a price difference. Knitting and cutting losses, freight, the
+    workshop margin and the shop shares are the wool tee's; the rest is in
+    the "algodon" block of data/cadena.json.
+    """
+    W = {k: p["valor"] for k, p in assumptions["parametros"].items()}
+    cotton = assumptions["algodon"]
+    v = {k: p["valor"] for k, p in cotton["parametros"].items()}
+    lint = v["indice_a"] / 100 * LB_PER_KG
+    shop = W["tienda_canada_goose"]
+    base = {
+        "precio": v["precio_tienda_usd"],
+        "peso": v["peso_prenda_g"],
+        "lana": v["algodon_frac"],
+        "m_hilado": v["merma_hilado"],
+        "m_tejido": W["merma_tejido"],
+        "m_corte": W["merma_corte"],
+        "peinada": lint,
+        "peinada_fina": lint,
+        "hilado_fino": v["hilado_usd_kg"],
+        "materiales": v["materiales_usd"],
+        "confeccion": v["confeccion_usd"],
+        "embalaje": v["embalaje_usd"],
+        "tela_catalogo": v["tela_catalogo_usd_kg"],
+        "fob_alto": v["fob_alto_usd"],
+        "flete": W["flete_usd"],
+        "arancel": v["arancel_nmf"] + v["arancel_301"],
+        "g_hilado": v["margen_hilado"],
+        "g_tela": v["margen_tela"],
+        "g_confeccion": W["margen_confeccion"],
+        "tienda": shop["dtc_margen_bruto"] - shop["dtc_margen_operativo"],
+        "marca": shop["gastos_corporativos_mcad"] / shop["ingresos_totales_mcad"],
+        "fabrica": "central",
+    }
+    # As for the wool tee: the cost sheet's materials over this tee's fabric.
+    base["tela_hoja"] = base["materiales"] / (_masses(base)["tela_g"] / 1000)
+    central = _ladder(base)
+    return {
+        "producto": cotton["producto"],
+        "fibra": {"usd_kg": lint, "centavos_lb": v["indice_a"]},
+        "precio_usd": base["precio"],
+        "arancel": {
+            "nmf": v["arancel_nmf"],
+            "s301": v["arancel_301"],
+            "total": base["arancel"],
+            # A tee that qualifies under the US–Peru agreement pays only the surcharge.
+            "ahorro_tlc_usd": central["fob_usd"] * v["arancel_nmf"],
+        },
+        **central,
+        "fabrica": {k: _ladder({**base, "fabrica": k})["fob_usd"] for k in FACTORY},
+        "parametros": cotton["parametros"],
     }
 
 
