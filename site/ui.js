@@ -192,8 +192,10 @@
 
   // Decoración: hebras con rizo, como el de la lana merino, que siguen un campo de corriente
   // lento y se apartan del puntero. No representan datos.
-  function fibers(canvas) {
+  // scroll: cuánto corre el campo con el desplazamiento de la página (0 = nada).
+  function fibers(canvas, { scroll = 0 } = {}) {
     const ctx = canvas.getContext("2d");
+    let active = true;
     let W = 0;
     let H = 0;
     let list = [];
@@ -247,13 +249,14 @@
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       const step = 6;
+      const off = scroll * scrollY;
       for (const f of list) {
         const steps = Math.ceil((W * 1.25 * f.reach) / step);
         let x = f.x0;
         let y = f.y0 + 18 * Math.sin(t * 0.2 + f.drift);
         ctx.beginPath();
         for (let s = 0; s < steps; s++) {
-          let ang = field(x, y + f.drift, t);
+          let ang = field(x, y + f.drift + off, t);
           const dx = x - pointer.x;
           const dy = y - pointer.y;
           const d2 = dx * dx + dy * dy;
@@ -284,7 +287,7 @@
       requestAnimationFrame(loop);
     }
     function setRunning() {
-      const want = visible && !document.hidden && !reduce;
+      const want = active && visible && !document.hidden && !reduce;
       if (want && !running) {
         running = true;
         requestAnimationFrame(loop);
@@ -321,7 +324,29 @@
       pointer.x = pointer.y = -1e4;
     });
     setRunning();
+    return {
+      setActive(on) {
+        active = on;
+        setRunning();
+      },
+    };
   }
 
-  document.querySelectorAll("canvas.fibers").forEach(fibers);
+  document.querySelectorAll("canvas.fibers").forEach((c) => fibers(c));
+
+  // Una capa fija con las mismas hebras acompaña al lector por toda la página. Se enciende
+  // cuando la portada (que tiene las suyas) empieza a salir de pantalla.
+  const hero = document.querySelector(".hero");
+  const page = document.createElement("canvas");
+  page.className = "page-fibers";
+  page.setAttribute("aria-hidden", "true");
+  document.body.prepend(page);
+  const pageFibers = fibers(page, { scroll: 0.35 });
+  function fadePage() {
+    const k = hero ? Math.min(1, Math.max(0, scrollY / (hero.offsetHeight * 0.8))) : 1;
+    page.style.setProperty("--k", k.toFixed(3));
+    pageFibers.setActive(k > 0.02);
+  }
+  addEventListener("scroll", fadePage, { passive: true });
+  fadePage();
 })();

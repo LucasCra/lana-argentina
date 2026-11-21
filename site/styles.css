@@ -45,6 +45,7 @@
   --sheen: rgba(255, 255, 255, 0.9);
   --dots: rgba(11, 11, 11, 0.07);
   --fiber-alpha: 0.8;
+  --fiber-page-alpha: 0.55;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -90,6 +91,7 @@
     --sheen: rgba(255, 255, 255, 0.06);
     --dots: rgba(255, 255, 255, 0.05);
     --fiber-alpha: 0.75;
+    --fiber-page-alpha: 0.5;
   }
 }
 
@@ -135,6 +137,7 @@
   --sheen: rgba(255, 255, 255, 0.06);
   --dots: rgba(255, 255, 255, 0.05);
   --fiber-alpha: 0.75;
+  --fiber-page-alpha: 0.5;
 }
 
 /* ------------------------------------------------------------ base */
@@ -313,6 +316,22 @@ a { color: var(--accent); }
 @media (max-width: 720px) {
   .hero { padding: 36px 0 20px; }
   .hero .fibers { opacity: calc(var(--fiber-alpha) * 0.55); }
+}
+
+/* Las mismas hebras detrás de toda la página (ui.js crea el canvas). Aparecen a medida que la
+   portada sale de pantalla (--k) y se atenúan en la columna de lectura para no competir con el texto. */
+.page-fibers {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: calc(var(--fiber-page-alpha) * var(--k, 0));
+  mask-image: linear-gradient(90deg, #000, rgba(0, 0, 0, 0.3) 24%, rgba(0, 0, 0, 0.3) 76%, #000);
+}
+@media (max-width: 720px) {
+  .page-fibers { opacity: calc(var(--fiber-page-alpha) * var(--k, 0) * 0.6); }
 }
 
 .eyebrow {
