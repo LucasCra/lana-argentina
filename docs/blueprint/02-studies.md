@@ -160,11 +160,14 @@ Decide these in the brief. Whatever you drop, say so on the first page.
 | A supply balance (the source prints none) | Drop the balance sections. Do not assemble one from parts. Study 5 section 1 shows only what is counted. |
 | Exit points | Drop that section. |
 | Monthly data in the long run | Drop the seasonality section of study 2. |
-| A single route (parallel routes lead to the same product) | Keep one ladder per route in the pipeline. Charts by stage show the routes as separate entities where they differ. |
-| By-products that matter | Show them in a section of their own in study 3. Keep them out of every total of the material. |
 | A second source | Study 3 keeps only what the main source covers, and has no control chart. Say that nothing checks the main source. |
 | A processing ladder (the product is sold as produced) | Drop study 3. Study 5 becomes "where the price goes" and leans on study 4. |
 | A retail product with a public price | Drop study 4. Study 5 keeps sections 1 to 3 and the questions; it has no map, because nothing prices the later steps. |
 | Physical units (a service) | The model fits poorly. Replace quantity with the unit the industry bills in, stages with the steps between producer and final buyer, and expect to drop studies 3 and 5. Tell the human before building. |
+
+Two cases add something instead of removing it:
+
+- **Parallel routes to the same product.** Keep one ladder per route in the pipeline. Charts by stage show the routes as separate entities where they differ.
+- **By-products that matter.** Give them a section of their own in study 3. Keep them out of every total of the material.
 
 With fewer than five studies, the header tabs, the study cards and their numbering shrink to match, and the first study you build becomes `index.html`. [05-shell.md](05-shell.md) lists the places to change.

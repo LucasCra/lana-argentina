@@ -66,11 +66,17 @@ On success the build prints one line per bundle with what it covers (how many fi
 ## Raw files are evidence
 
 - A file under `data/raw/` is stored exactly as published. Nothing edits it and nothing overwrites it. If the publisher re-issues a file, the new one is stored beside the old one.
-- Each folder has a `sources.json` that maps file name to the URL it came from, and to the date it was fetched when the file itself carries no date. The page links both: the stored copy and the publisher.
+- Each folder has a `sources.json` that maps each file name to the URL it came from and the date it was fetched, as below. The page links both: the stored copy and the publisher.
 - A source that lives at one stable URL and changes in place is saved under a name that carries its issue or fetch date, so every version is kept.
 - `fetch.py` reads the publisher's listing page, downloads only the files not yet on disk, and records each URL. For an API, it saves each raw answer as one file per year or query and never asks again for a year it already has. To refresh a year, delete its file and fetch again; git keeps the old answer.
 - Respect the source's limits. Sleep between calls when the API asks for it. If an answer has exactly as many rows as the API's cap, treat it as cut off and stop.
 - Use a generic user agent. Put no personal details in requests.
+
+```json
+{
+  "bulletin-2026-10.pdf": { "url": "https://…/bulletin-2026-10.pdf", "fetched": "2026-11-21" }
+}
+```
 
 > **Wool example.** Ten monthly PDFs, twenty-eight annual PDFs, and one JSON answer per calendar year from the UN Comtrade public API (one call per second, 500 rows per call). Two of the monthly PDFs are corrected re-issues. When an original and its re-issue are both on disk, the later issue date wins and the page lists the file it replaced.
 
@@ -78,7 +84,7 @@ On success the build prints one line per bundle with what it covers (how many fi
 
 One parser per source format. Its whole interface is one function: a path in, a plain dictionary out. Whatever the format (PDF, spreadsheet, CSV, API answer), it keeps these promises:
 
-1. **Identity.** The result says which file it is, when it was issued, and which period it covers. If the file carries no issue date, as an API answer does not, the fetch date from `sources.json` stands in. If the period cannot be established, the parser raises.
+1. **Identity.** The result says which file it is, when it was issued, and which period it covers. If the file carries no issue date, as an API answer does not, its fetch date from `sources.json` stands in. If the period cannot be established, the parser raises.
 2. **Blank is absent, never zero.** An empty cell produces no key. A month the report has not reached yet is dropped. A mark for "not available" or "not applicable" is absent too. A mark such as "less than 0.1" is kept as printed and shown as printed; it is not zero.
 3. **Printed shares and averages are not read.** They are recomputed downstream from quantities and money. Sources misprint them.
 4. **Every table is checked against its own printed totals** before the function returns: rows against row totals, columns against column totals, and tables against each other where they report the same total. A source that prints no totals, as an API answer does not, is checked for what can be checked: the expected codes, the row count, the period. Where the source itself warns that two of its totals differ, that difference is a warning.

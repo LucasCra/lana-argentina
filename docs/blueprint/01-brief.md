@@ -2,7 +2,7 @@
 
 The brief is one file, `docs/brief.md` in the new repository. You fill it in before any code exists. It names the sources, fixes the vocabulary, and says which of the five studies this industry can carry. The human confirms it. Then you build.
 
-At this step you create the new repository, and it holds two things only: `docs/brief.md`, and `data/raw/` with one folder per source, each with its sample files and a `sources.json` that maps file name to URL. Commit both when the brief is ready. Step 1 builds the rest of the layout around them.
+At this step you create the new repository, and it holds two things only: `docs/brief.md`, and `data/raw/` with one folder per source, each with its sample files and a `sources.json` that maps each file name to its URL and fetch date. Commit both when the brief is ready. Step 1 builds the rest of the layout around them.
 
 The blueprint itself can stay outside the new repository or be copied into its `docs/blueprint/`. The built site never refers to it.
 

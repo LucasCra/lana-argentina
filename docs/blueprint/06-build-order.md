@@ -18,7 +18,7 @@ Create the repository. Store the sample files and fill in `docs/brief.md` as [01
 6. Write `build.py` with the bundle writer and no sources yet.
 7. Check the example page at desktop width and at 375 pixels, in light and dark, with reduced motion on, and with the keyboard alone.
 
-**Gate.** Five linked pages with the final header, hero and study cards. The example charts still run on the first page. Commit.
+**Gate.** One page per study you build, all linked, with the final header, hero and study cards. The example charts still run on the first page. Commit.
 
 ## Steps 2 to 6 · One study at a time
 
