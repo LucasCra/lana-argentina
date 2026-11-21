@@ -6,15 +6,15 @@ The reference site was built data first and given its shared look last, which me
 
 ## Step 0 · The brief
 
-Fill in `docs/brief.md` as [01-brief.md](01-brief.md) says. Stop. Wait for the human to confirm.
+Create the repository. Store the sample files and fill in `docs/brief.md` as [01-brief.md](01-brief.md) says. Commit. Stop. Wait for the human to confirm.
 
 ## Step 1 · Skeleton and shell
 
 1. Create the rest of the repository layout from [03-pipeline.md](03-pipeline.md) around the `docs/brief.md` and `data/raw/` that step 0 left: `pyproject.toml`, an empty `pipeline/`, `tests/`, `site/vendor/`, `.gitignore`.
 2. Download the chart library into `site/vendor/` and commit it.
-3. Copy the stylesheet, the interface script, the page skeleton and the page script with its data file from the kit into `site/`. Run the example page exactly as shipped. It must show four tiles, two charts and a period selector, with no error in the browser console.
-4. Adapt `ui.js` and `styles.css`: studies, icons, strings, locale, brand glyph, number of studies. The list is in [05-shell.md](05-shell.md).
-5. Create one HTML file per study from the skeleton, each with its title, eyebrow, tabs and an empty `<main>`. Every tab and every study card must link to a page that exists.
+3. Copy the stylesheet, the interface script, the page skeleton and the page script with its data file from the kit into `site/`, as `styles.css`, `ui.js`, `index.html`, `page.js` and `data.js`. Run the example page exactly as shipped. It must show four tiles, two charts and a period selector, with no error in the browser console.
+4. Adapt the shared files and the example page, from the lists in [05-shell.md](05-shell.md): studies, icons and strings in `ui.js`; the number of studies in `styles.css`; the locale in `ui.js` and `page.js` together; the brand, the tabs and the labels in `index.html`. Reload: every numeric tile must still count up.
+5. Create one HTML file for each of the other studies from the skeleton: its title, eyebrow and tabs, an empty row of section links, an empty `<main>`, no period selector, and `ui.js` as its only script. `index.html` keeps the example for now. Every tab and every study card must link to a page that exists.
 6. Write `build.py` with the bundle writer and no sources yet.
 7. Check the example page at desktop width and at 375 pixels, in light and dark, with reduced motion on, and with the keyboard alone.
 
@@ -28,7 +28,7 @@ In order: now, history, industry, chain, opportunities. Skip the studies the bri
 2. **Parse and check.** Write the parser with its guarantees and its checks against printed totals. Run it on every stored file. When a file fails, read the file: either the parser is wrong, or the source is, and the second is a finding to show on the page.
 3. **Test on the real files.** Known values copied by hand, one test per layout quirk, the failure cases.
 4. **Derive.** Write the derive step. Put every decision in it and say each one in its docstring. Add its bundle to `build.py`.
-5. **Draw.** Replace the page's example charts with the study's sections from [02-studies.md](02-studies.md). Texts that quote figures are built from the bundle.
+5. **Draw.** Give the page its own script and bundle, `<page>.js` and `<page>-data.js`, starting from the kit's page script, and write the study's sections from [02-studies.md](02-studies.md). For the first study this replaces `page.js` and `data.js`; delete those two. Texts that quote figures are built from the bundle.
 6. **Review your own page against [04-evidence.md](04-evidence.md)**, rule by rule.
 7. **Fact-check.** Hand the page to a separate agent or session with the prompt in [04-evidence.md](04-evidence.md). Fix everything it finds that is not supported.
 8. **Check in the browser**: desktop and 375 pixels, light and dark, console clean, every table opens.
@@ -81,7 +81,7 @@ and say where you looked. Do not estimate.
 
 ## Step 7 · The whole site
 
-Go through the acceptance list below on all pages together. Then write the project's own `README.md`: what the site is, how to open it, how to update it when a new file is published, where each kind of thing lives, how to run the checks.
+Go through the acceptance list below on all pages together. Then write the project's own `README.md`: what the site is, how to open it, how to update it when a new file is published, where each kind of thing lives, how to run the checks, and the origin and licence of each vendored file.
 
 ## Step 8 · Publish
 
@@ -110,7 +110,7 @@ Only if the human asked. See the end of [03-pipeline.md](03-pipeline.md).
 - [ ] Ranges sit beside the figures they qualify.
 - [ ] Every assumption shows its type, source, date and whether it was re-read.
 - [ ] The opportunities page explains nothing by policy, taxes or preferences; those are listed as questions.
-- [ ] Each research page passed an independent fact-check, and its findings were fixed.
+- [ ] Every page passed an independent fact-check, and its findings were fixed.
 - [ ] Dropped studies and missing sources are named on the first page.
 
 ### Interface

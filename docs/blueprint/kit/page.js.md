@@ -2,9 +2,11 @@
 
 A complete page script with two example charts, four summary tiles and a period selector. With [page.html.md](page.html.md), [styles.css.md](styles.css.md), [ui.js.md](ui.js.md), the chart library and the data file below, it is a working page. Build that page first, see it run, then replace the example parts.
 
-The sections **format**, **theme**, **cards** and **start** come from `site/app.js` at commit `0440132`, with comments and two button labels translated. The reference site keeps a copy of them in each of its five page scripts, so every page is one self-contained file. You may do the same, or move them to one `kit.js` loaded before the page scripts; if you do, keep the functions and their arguments as they are.
+The sections **format**, **theme**, **cards** and **start** come from `site/app.js` at commit `0440132`, with comments and two button labels translated. The reference site keeps a copy of them in each of its five page scripts, so every page is one self-contained file. Do the same: copy this file once per page.
 
 Numbers and dates are formatted for `es-AR`, the reference locale, to match `ui.js` as shipped. [05-shell.md](../05-shell.md) lists the places to change together.
+
+For the first run, save the two blocks below as `data.js` and `page.js` beside `index.html`. Each real page then gets its own pair, `<page>-data.js` and `<page>.js`, and its bundle sets a global of its own (`window.DATA`, `window.HISTORY`, …) so that a page can load several.
 
 ## `data.js`
 
@@ -374,7 +376,7 @@ window.DATA = {
       </div>
       <div class="tile">
         <div class="label">Tons shipped</div>
-        <div class="value">${num(a.tons)}<span class="unit">t</span></div>
+        <div class="value">${num(a.tons, 1)}<span class="unit">t</span></div>
         <div class="delta">${delta(a.tons, b.tons)} (${num(b.tons)} t)</div>
       </div>
       <div class="tile">

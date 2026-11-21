@@ -20,7 +20,7 @@ They are not optional. When a rule and a nicer sentence disagree, the sentence l
 
 **4. Every table adds up, or the build stops.** See [03-pipeline.md](03-pipeline.md). A source that fails its own totals is reported with the file and the table, and nothing is written.
 
-**5. State the basis on every chart, and never add across bases.** Different weights, different periods and different valuation points go side by side with their labels. They are not summed and not divided by one another without saying so.
+**5. State the basis on every chart, and never add across bases.** Different weights, different periods and different valuation points go side by side with their labels. They are not summed and not divided by one another without saying so. Every price per unit names both of its terms: money valued where, per unit weighed how. The site uses one price basis throughout, the one the brief names.
 
 **6. Say which population an average covers.**
 
@@ -46,7 +46,7 @@ They are not optional. When a rule and a nicer sentence disagree, the sentence l
 
 **12. Raw files are stored and never edited.** Every figure can be traced to a file on disk and to the URL it came from.
 
-**13. When two sources disagree, show both and choose per series.** Draw a control chart with the same flow according to each source. Use each source only for what it measures well, and say on the page why.
+**13. When two sources disagree, show both and choose per series.** Draw a control chart with the same flow according to each source, in money if they weigh on different bases. Use each source only for what it measures well, and say on the page why.
 
 **14. Say exactly what the source says.** Its dates, its period, its scope, its hedges. If the source covers part of a period, so does your sentence.
 

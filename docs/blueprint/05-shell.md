@@ -11,8 +11,8 @@ The look and behaviour of the site live in four files, given in full in `kit/`. 
 
 Also needed, not in the kit:
 
-- **The chart library.** Apache ECharts 5.5.1, as the single file `echarts.min.js` from the `dist/` folder of its official release, saved to `site/vendor/`.
-- **Map data**, only if a page draws the world map. The reference site loads it from a file of its own, separate from the library. Take a world GeoJSON with an open licence in which every feature has a `name` property, and save it as `site/vendor/world.js` in the form `echarts.registerMap("world", <the GeoJSON>);`. The names in that file are the ones the parser's country table must map to.
+- **The chart library.** Apache ECharts 5.5.1, as the single file `echarts.min.js` from the `dist/` folder of its official release (the npm package `echarts`; Apache-2.0 licence), saved to `site/vendor/`.
+- **Map data**, only if a page draws the world map. The reference site loads it from a file of its own, separate from the library. Take a world GeoJSON with an open licence in which every feature has a `name` property, and save it as `site/vendor/world.js` in the form `echarts.registerMap("world", <the GeoJSON>);`. If its features name countries in another property, copy that into `name` when you write the file. The names in that file are the ones the parser's country table must map to. Record the file's origin and licence in the project README.
 
 Download both once and commit them. The site must not load anything from the network.
 
@@ -73,11 +73,11 @@ You may keep the palette as it is; it does not say "wool". If you change it, cha
 
 | Where | What | Change to |
 | --- | --- | --- |
-| `ICONS` | Five 24 × 24 stroke icons, one per study. | Icons that fit your studies. Same style: `stroke="currentColor"`, width 1.6, no fill. |
-| `STUDIES` | One entry per study: file, name, a one-line question, icon key, colour token. | Your pages, in order. The number shown on each card is its position. |
+| `ICONS` | Five 24 × 24 stroke icons, one per study. | Icons that fit your studies. Draw the paths yourself; no icon set is bundled. Same style: `stroke="currentColor"`, width 1.6, no fill. |
+| `STUDIES` | One entry per study: file, name, a one-line question, icon key, colour token. | Your pages, in order, named as in the header tabs. The number shown on each card is its position. The colour tokens are the five data colours reused as card accents: keep them as shipped. |
 | The card template under `STUDIES` | The strings `"Estás acá"` ("you are here") and `"Abrir →"` ("open"). | The site's language. |
 | `countUp` | It reads a tile's text back into a number, so it must know the locale's separators. It ships for `es-AR`: `.` for thousands, `,` for decimals. | See the locale section below. |
-| `fibers` | The decorative strands. The `rizo` (crimp) term in the drawing loop is the wave along each strand that makes it read as wool. | See the decoration section below. |
+| `fibers` | The decorative strands. The `rizo` (crimp) term in the drawing loop is the wave along each strand that makes it read as wool. | Nothing by default. See the decoration section below. |
 | `placePadding` | Skips its work when an element with id `season-bar` exists, because the page script sets the scroll offset on such pages. | Nothing, as long as the period selector keeps that id. |
 
 ### In `styles.css`
@@ -85,8 +85,8 @@ You may keep the palette as it is; it does not say "wool". If you change it, cha
 | Where | What | Change to |
 | --- | --- | --- |
 | The `:root` blocks | The palette. | Optional. See above. |
-| `.journey` | `repeat(5, …)` appears three times: the study cards assume five studies. | The number of studies you build. |
-| `#tabla-supuestos` | A height for one table of the reference chain page. | Rename to your table's id, or delete. |
+| `.journey` | `repeat(5, …)` appears three times: the study cards assume five studies. | The number of studies you build. Nothing if you build five. |
+| `#tabla-supuestos` | A height for one table of the reference chain page. | Leave it until the chain study. Then put an id of your own on the `.table-wrap` of the assumptions table and rename the rule to match. |
 
 ### In every HTML page
 
@@ -101,6 +101,8 @@ Listed at the end of [kit/page.html.md](kit/page.html.md).
 | `buildCard` | The button labels `"Show table"` and `"Hide table"`. | The site's language. |
 | Everything marked `EXAMPLE` | Example entities, charts, tiles and texts. | The page's own. |
 
+Comments in `styles.css` and `ui.js` are in Spanish. Translate them or leave them; they change nothing.
+
 ### Locale
 
 The number format appears in three places that must agree: `num` and `longDate` in each page script, and `countUp` in `ui.js`. If they disagree, tiles animate through wrong values. For example, the shipped `es-AR` pattern reads the en-US text `4,488` as 4.488.
@@ -114,13 +116,15 @@ const target = Number(m[2].replace(/,/g, ""));
 const fmt = new Intl.NumberFormat("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 ```
 
-The four lines are not adjacent in the file: leave the lines between them as they are. For any other locale, write the same four lines for its separators and check three tiles by hand: one with thousands, one with decimals, one with both. Each must count up through sensible values and stop on the exact original text.
+The four lines are not adjacent in the file: leave the lines between them as they are. For any other locale, write the same four lines for its separators.
+
+Change all three places in one go, then reload the example page and watch its tiles: one has decimals only, one has thousands and decimals. Each must count up through sensible values and stop on the exact original text. A tile that no longer animates means the pattern in `countUp` does not match what the page script writes.
 
 Month and period labels are made by the pipeline, in the site's language, and arrive in the data bundle.
 
 ### Decoration
 
-The strands are decoration only. They follow a slow flow field, take their colours from the tokens, bend away from the pointer, and represent no data. You have three honest options: keep them as abstract lines, redraw the motif for your industry, or remove the canvas. Whatever you choose, keep the contract:
+The strands are decoration only. They follow a slow flow field, take their colours from the tokens, bend away from the pointer, and represent no data. The default is to leave the code as it is; the strands read as abstract lines. You may instead redraw the motif for your industry, or remove it: delete the `<canvas class="fibers">` from every page and, in `ui.js`, everything from the `fibras` banner comment down to, but not including, the closing `})();`. If you keep or redraw it, keep the contract:
 
 - `aria-hidden="true"` on the canvas, and no information in it.
 - One static frame when the system asks for reduced motion.
@@ -156,8 +160,8 @@ Helpers in the kit, all reading colours from the tokens:
 | `base()` | Font, margins and tooltip style common to every chart. |
 | `axisCat(labels, extra)`, `axisVal(format, extra)` | A category axis and a value axis in the house style. |
 | `barStyle(color, roundedEnd, horizontal)` | A bar fill with a hairline in the card colour between segments. |
-| `stacked(keys, rows, get, horizontal)` | Data for stacked bars; only the last segment present in each bar is rounded; missing values become gaps. |
-| `totalLabel(stack, n, format)` | An invisible last series that prints each bar's total at its tip. |
+| `stacked(keys, rows, get, horizontal)` | Data for stacked bars; only the last segment present in each bar is rounded. Missing and zero values draw nothing; the table still prints a printed zero. |
+| `totalLabel(stack, n, format)` | For horizontal stacked bars: an invisible last series that prints each bar's total at its tip. |
 | `lineSeries(name, data, color, extra)` | A line with round joins and dots ringed in the card colour. |
 | `swatch(color, line)` | A colour mark for tooltips. |
 | `inkOn(hex)` | White or near-black, whichever reads on that fill. |
@@ -189,6 +193,8 @@ Which form for which data:
 | A value built up stage by stage | Waterfall |
 | Scenarios | One horizontal stacked bar per scenario |
 | One figure's recent path, inside a tile | Sparkline with the last point marked |
+
+The kit has code for vertical stacked bars and horizontal bars ([kit/page.js.md](kit/page.js.md)), and for the map and the sparkline ([kit/chart-excerpts.md](kit/chart-excerpts.md)). Write the other forms from the chart library's documentation, with the kit's helpers.
 
 A waterfall is a stacked bar chart whose first series is transparent and silent: its value lifts each bar to where the previous one ended.
 

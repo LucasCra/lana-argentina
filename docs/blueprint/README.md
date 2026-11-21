@@ -2,7 +2,7 @@
 
 A set of documents that tells a coding agent how to build a research site about one industry in one place. The site answers five questions, one page each: where the industry stands now, how it got here, how far the place processes its own raw material, what one product's value chain looks like, and where more value could be kept.
 
-The blueprint was extracted from a working site about Argentine wool, at commit `0440132` of this repository. That site is the reference. Nothing here depends on wool: every wool detail sits in a block marked **Wool example**, and the builder replaces it.
+The blueprint was extracted from a working site about Argentine wool, at commit `0440132` of that site's repository. That site is the reference. Nothing here depends on wool: every wool detail sits either in a block marked **Wool example** or, in the kit's code, at a point listed in [05-shell.md](05-shell.md). The builder replaces both.
 
 The set is self-contained. An agent that has only this folder can build the site. It does not need the wool repository.
 
@@ -48,12 +48,12 @@ After I confirm the brief, follow 06-build-order.md: the shell first, then one s
 commit, with a fact-check before each study counts as done.
 
 The rules in 04-evidence.md are not optional. When the data does not support a claim, the
-claim goes. When a source cannot be found, say so and stop; do not fill the gap from memory.
+claim goes. When a source cannot be found, say so; never fill the gap from memory.
 ```
 
 ## What the agent needs
 
-- A shell, with Python 3.12 or later and `uv`.
+- A shell, with Python 3.12 or later and `uv`, and the freedom to add the Python libraries that read the sources' formats (PDF tables, spreadsheets, HTML).
 - File read and write in a new, empty repository.
 - Web access to find and download the sources.
 - A browser it can drive, to check each page at desktop and phone widths, in light and dark.
@@ -63,7 +63,7 @@ claim goes. When a source cannot be found, say so and stop; do not fill the gap 
 
 The agent stops once, after the brief. The brief decides everything that is expensive to change later: which sources carry the site, which units and periods it uses, which stages the industry has, and which product the chain page follows. Read it, correct it, confirm it.
 
-After that the agent works through to the end without asking, and reports per study what it built, what it checked and what it could not find.
+After that the agent works through to the end without asking, and reports per study what it built, what it checked and what it could not find. A source that turns out to be missing after the checkpoint does not stop the work: the agent builds what the data supports, says on the page what is missing, and reports it. It stops again only if a study loses its main source.
 
 ## Where the blueprint came from
 

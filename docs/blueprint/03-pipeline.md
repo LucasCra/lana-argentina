@@ -6,8 +6,8 @@ The pipeline turns stored source files into the data each page draws. It has one
 
 The site must open by double-clicking a file, with no server and no network. That one requirement decides most of the design:
 
-- Pages cannot `fetch()` JSON from `file://`. So the build writes each page's data as a script that sets one global: `window.DATA = {...};`. The page loads it with a plain `<script>` tag.
-- No modules, no bundler, no package manager for the site. Each page has one script. The chart library is a single vendored file.
+- Pages cannot `fetch()` JSON from `file://`. So the build writes each page's data as a script that sets one global: `window.DATA = {...};`. The page loads it with a plain `<script>` tag. Each bundle sets a global of its own, named after its page, so a page that loads several bundles sees them all.
+- No modules, no bundler, no package manager for the site. Each page has one script of its own, plus the shared `ui.js`. The chart library is a single vendored file.
 - The data bundles are tracked in git, so the site works for someone who never runs the build.
 - All arithmetic happens in Python, where it is tested. The page formats and draws.
 
@@ -66,8 +66,9 @@ On success the build prints one line per bundle with what it covers (how many fi
 ## Raw files are evidence
 
 - A file under `data/raw/` is stored exactly as published. Nothing edits it and nothing overwrites it. If the publisher re-issues a file, the new one is stored beside the old one.
-- Each folder has a `sources.json` that maps file name to the URL it came from. The page links both: the stored copy and the publisher.
-- `fetch.py` reads the publisher's listing page, downloads only the files not yet on disk, and records each URL. For an API, it saves each raw answer as one file per year or query and never asks again for a year it already has. To refresh a year, delete its file.
+- Each folder has a `sources.json` that maps file name to the URL it came from, and to the date it was fetched when the file itself carries no date. The page links both: the stored copy and the publisher.
+- A source that lives at one stable URL and changes in place is saved under a name that carries its issue or fetch date, so every version is kept.
+- `fetch.py` reads the publisher's listing page, downloads only the files not yet on disk, and records each URL. For an API, it saves each raw answer as one file per year or query and never asks again for a year it already has. To refresh a year, delete its file and fetch again; git keeps the old answer.
 - Respect the source's limits. Sleep between calls when the API asks for it. If an answer has exactly as many rows as the API's cap, treat it as cut off and stop.
 - Use a generic user agent. Put no personal details in requests.
 
@@ -77,10 +78,10 @@ On success the build prints one line per bundle with what it covers (how many fi
 
 One parser per source format. Its whole interface is one function: a path in, a plain dictionary out. Whatever the format (PDF, spreadsheet, CSV, API answer), it keeps these promises:
 
-1. **Identity.** The result says which file it is, when it was issued, and which period it covers. If the file does not say, the parser raises.
-2. **Blank is absent, never zero.** An empty cell produces no key. A period the report has not reached yet is dropped.
+1. **Identity.** The result says which file it is, when it was issued, and which period it covers. If the file carries no issue date, as an API answer does not, the fetch date from `sources.json` stands in. If the period cannot be established, the parser raises.
+2. **Blank is absent, never zero.** An empty cell produces no key. A month the report has not reached yet is dropped. A mark for "not available" or "not applicable" is absent too. A mark such as "less than 0.1" is kept as printed and shown as printed; it is not zero.
 3. **Printed shares and averages are not read.** They are recomputed downstream from quantities and money. Sources misprint them.
-4. **Every table is checked against its own printed totals** before the function returns: rows against row totals, columns against column totals, and tables against each other where they report the same total.
+4. **Every table is checked against its own printed totals** before the function returns: rows against row totals, columns against column totals, and tables against each other where they report the same total. A source that prints no totals, as an API answer does not, is checked for what can be checked: the expected codes, the row count, the period. Where the source itself warns that two of its totals differ, that difference is a warning.
 5. **Tolerance comes from rounding, not from convenience.** If each printed value is rounded to 0.1, a sum of *n* values may drift by 0.05 × *n*. Allow that and no more.
 6. **Unknown things fail loudly.** A country, port, product, month label or table layout the parser does not know raises an error that names the file, the table and what to add. Nothing is skipped silently.
 7. **Names are canonical.** The parser maps each printed label to one fixed key. The mapping tables live in the parser and are the single place to extend.
@@ -105,7 +106,7 @@ One derive function per page. It takes parser output and returns one JSON-ready 
 - **Periods are consecutive.** A gap raises.
 - **Method eras.** Each period carries a flag for the method its source used, and series that do not survive a method change are given per era.
 - **One-off distortions.** If one month books a year of adjustments, the step computes the affected figures with and without it.
-- **Joins across studies.** The opportunities step takes the outputs of the other derive steps and adds only the arithmetic that joins them. It raises if a band does not add up to its total.
+- **Joins across studies.** The opportunities step takes the outputs of the other derive steps and adds only the arithmetic that joins them. It raises if a band (a range of the grade scale) does not add up to its total.
 
 Blank stays absent through the derive step. Nothing missing becomes zero.
 
@@ -168,7 +169,7 @@ Every parameter has a `type`:
 
 | Type | Meaning |
 | --- | --- |
-| `computed` | The build computes it from the main source. |
+| `computed` | The build computes it from the main source. Its `source` and `url` name the table and file it comes from. |
 | `source` | A published figure. |
 | `inference` | Your own calculation from published figures. |
 | `assumption` | No direct source. |
@@ -188,9 +189,9 @@ Per one unit of the product:
 
 1. **Mass balance, backwards.** Product weight → the intermediate bought by the last stage (plus its loss) → the one before, back to the place's export product.
 2. **Raw material.** The export product at the main source's price for the latest complete period.
-3. **Stage ladder.** Each stage buys what the previous one sold. Value added is sale minus purchase. The build raises if a stage sells for less than it buys.
-4. **Border.** Duty on the customs value, plus freight per unit.
-5. **Brand and shop.** Shelf price minus landed cost.
+3. **Stage ladder.** Each stage buys what the previous one sold. Value added is sale minus purchase. The build raises if a stage sells for less than it buys. If the industry pays a stage by a processing charge instead of a price difference, that stage's value added is the charge, and the page says so.
+4. **Border.** Duty on the customs value (the price at which the goods cross), plus freight per unit. It sits between the two stages where the goods actually cross a border, which is not always after the last factory stage.
+5. **Brand and shop.** Shelf price minus landed cost (the price paid at the border, plus duty and freight).
 6. **Cost and profit.** A stage's profit is a listed company's operating margin times the stage's sales. Cost is value added minus that profit.
 7. **Scenarios.** The same ladder, re-run with one input changed. The ranges printed on the page are the minimum and maximum across scenarios, computed here.
 
@@ -200,7 +201,7 @@ Anchor the factory price on a published cost breakdown for a comparable product 
 
 Tests run on the real stored files. They are the record of every way the sources have misbehaved.
 
-- **Every stored file parses**, and the set has one issue per period.
+- **Every stored file parses**, and the set covers consecutive periods: one issue per period, or one consolidated file with no gap.
 - **Known values.** A handful of figures copied by hand from the source, asserted exactly.
 - **One test per awkward layout.** When a file needs a repair, the repair gets a test, and the test module's docstring lists which file has which quirk.
 - **Blank is not zero**, asserted on a real blank cell.
@@ -216,7 +217,7 @@ Derive tests that need no real file use a small hand-made input. Mark any test t
 
 ## Tooling
 
-- Python 3.12 or later, run through `uv`. One runtime dependency: the library that reads the source format (a PDF table reader, a spreadsheet reader, or none for CSV and JSON). Development: `pytest` and `ruff`.
+- Python 3.12 or later, run through `uv`. Runtime dependencies: only the libraries that read the sources' formats, one per format (a PDF table reader, a spreadsheet reader, an HTML parser; none for CSV and JSON). Development: `pytest` and `ruff`.
 - Commands, to put in the project README:
 
 ```bash
@@ -237,3 +238,5 @@ uv run --frozen ruff check .
 ## Publishing
 
 Any static host works. For GitHub Pages serving the main branch: a root `index.html` with a meta refresh to `site/index.html`, so the pages' links to `../data/raw/` keep working, and an empty `.nojekyll` so the host serves the files untouched.
+
+Before publishing, read each source's terms of use. If they do not allow republishing its files, keep the stored copies out of the public site and link only to the publisher.
