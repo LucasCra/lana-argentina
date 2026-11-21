@@ -626,7 +626,7 @@
         `El recargo está impugnado; el escenario “sin el recargo” muestra el caso. ` +
         `Para una remera hecha en la Argentina, EE. UU. suma al arancel general ${pct(D.arancel.argentina)} de la misma Sección 301. ` +
         `La Unión Europea cobra ${pct(P.arancel_ue.valor)} y el acuerdo con el Mercosur lo baja en ${P.arancel_ue.etapas} etapas anuales iguales desde ${D.arancel.ue.anio_0}, ` +
-        `si la tela se teje y la prenda se confecciona en el Mercosur o con tela europea; las fuentes y lo que esos escenarios dejan fijo están en la tabla de supuestos.`,
+        `si la tela se teje y la prenda se confecciona en el Mercosur, o con tela originaria de la UE; las fuentes y lo que esos escenarios dejan fijo están en la tabla de supuestos.`,
       `<strong>Ganancia y costos.</strong> En el hilado, la tela y la confección, la ganancia es el margen operativo de una empresa cotizada de la etapa por lo que vende la etapa; en la marca y la tienda, lo que queda después de los gastos de tienda y de marca. ` +
         `Son promedios de empresas enteras, con otras fibras y otros clientes: indican el orden de magnitud, no la cuenta de esta remera.`,
       `<strong>Monedas.</strong> Euros y yuanes a dólares con el promedio mensual o anual del Banco Central Europeo. Dólares corrientes.`,
