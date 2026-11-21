@@ -10,9 +10,9 @@ Fill in `docs/brief.md` as [01-brief.md](01-brief.md) says. Stop. Wait for the h
 
 ## Step 1 · Skeleton and shell
 
-1. Create the repository layout from [03-pipeline.md](03-pipeline.md): `pyproject.toml`, an empty `pipeline/`, `tests/`, `data/raw/`, `site/vendor/`, `.gitignore`.
+1. Create the rest of the repository layout from [03-pipeline.md](03-pipeline.md) around the `docs/brief.md` and `data/raw/` that step 0 left: `pyproject.toml`, an empty `pipeline/`, `tests/`, `site/vendor/`, `.gitignore`.
 2. Download the chart library into `site/vendor/` and commit it.
-3. Copy the four kit files into `site/`. Run the example page exactly as shipped. It must show four tiles, two charts and a period selector, with no error in the browser console.
+3. Copy the stylesheet, the interface script, the page skeleton and the page script with its data file from the kit into `site/`. Run the example page exactly as shipped. It must show four tiles, two charts and a period selector, with no error in the browser console.
 4. Adapt `ui.js` and `styles.css`: studies, icons, strings, locale, brand glyph, number of studies. The list is in [05-shell.md](05-shell.md).
 5. Create one HTML file per study from the skeleton, each with its title, eyebrow, tabs and an empty `<main>`. Every tab and every study card must link to a page that exists.
 6. Write `build.py` with the bundle writer and no sources yet.

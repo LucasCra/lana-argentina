@@ -1,6 +1,6 @@
 # 05 · The shell and the charts
 
-The look and behaviour of the site live in four files, given in full in `kit/`. Do not write them from a description: copy them, run the example page, then adapt the points listed here.
+The look and behaviour of the site live in four files, given in full in `kit/`. Do not write them from a description: copy them, run the example page, then adapt the points listed here. A fifth kit file holds reference code to read, not to copy.
 
 | Kit file | Becomes | Role |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ The look and behaviour of the site live in four files, given in full in `kit/`. 
 Also needed, not in the kit:
 
 - **The chart library.** Apache ECharts 5.5.1, as the single file `echarts.min.js` from the `dist/` folder of its official release, saved to `site/vendor/`.
-- **Map data**, only if a page draws the world map. ECharts 5 ships none. Take a world GeoJSON with an open licence in which every feature has a `name` property, and save it as `site/vendor/world.js` in the form `echarts.registerMap("world", <the GeoJSON>);`. The names in that file are the ones the parser's country table must map to.
+- **Map data**, only if a page draws the world map. The reference site loads it from a file of its own, separate from the library. Take a world GeoJSON with an open licence in which every feature has a `name` property, and save it as `site/vendor/world.js` in the form `echarts.registerMap("world", <the GeoJSON>);`. The names in that file are the ones the parser's country table must map to.
 
 Download both once and commit them. The site must not load anything from the network.
 
@@ -32,6 +32,20 @@ From top to bottom:
 - **Footer.** One line: when and how the data was generated.
 
 Cards and tiles lift slightly on hover and show a soft highlight that follows the pointer. Headings, ledes, cards and tiles fade up as they enter the screen. A fixed, dimmed copy of the decorative strands fades in behind the whole page once the hero scrolls away.
+
+## Tables outside chart cards
+
+A prose card can hold a table the page script writes as markup: put it inside `<div class="table-wrap">`, which adds the border, the sideways scroll and a sticky header row. By default every cell is right-aligned and does not wrap, and the first column is left-aligned. That suits numbers. For text columns, put one of these classes on the `<td>`:
+
+| Class | Effect |
+| --- | --- |
+| `left` | Left-aligned, still on one line. |
+| `name-cell` | Wraps; at least 180 pixels wide. For a name column. |
+| `value-cell` | Wraps, left-aligned; at least 150 pixels. For a value that is text, such as a list of prices. |
+| `wrap-cell` | Wraps, left-aligned; at least 220 pixels. For a sentence. |
+| `source-cell` | Wraps, left-aligned; at least 360 pixels. For a citation. |
+
+`<span class="tag">` is a small pill for a one-word label next to a value, such as "re-issue" or "re-read". Escape every data string with `esc()` before it goes into markup.
 
 ## Colour tokens
 

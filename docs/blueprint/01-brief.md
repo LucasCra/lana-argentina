@@ -2,6 +2,10 @@
 
 The brief is one file, `docs/brief.md` in the new repository. You fill it in before any code exists. It names the sources, fixes the vocabulary, and says which of the five studies this industry can carry. The human confirms it. Then you build.
 
+At this step the new repository holds two things only: `docs/brief.md`, and `data/raw/` with one folder per source, each with its sample files and a `sources.json` that maps file name to URL. Create those folders now. Step 1 builds the rest of the layout around them.
+
+The blueprint itself can stay outside the new repository or be copied into its `docs/blueprint/`. The built site never refers to it.
+
 ## What the model needs from an industry
 
 The five studies assume four things. Check each one before anything else.
