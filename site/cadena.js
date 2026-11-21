@@ -568,7 +568,11 @@
       `contra ${share(S.peinada.vende_usd)} de la lana en la remera de merino. El índice es algodón convencional; el orgánico se paga más, así que esa barra es un piso. ` +
       `La fábrica sale de la hoja de costos de Quince para una remera de algodón Pima de 170 g/m²: ${usd(A.fabrica.central)} en la puerta de la fábrica. ` +
       `Arancel: ${pct(A.arancel.nmf, 1)} general y ${pct(A.arancel.s301, 1)} de recargo a Perú; si la remera califica para el acuerdo comercial con Perú, paga sólo el recargo, ${usd(A.arancel.ahorro_tlc_usd)} menos. ` +
-      `Marca y tienda se llevan ${pct(AS.tienda.agrega_usd / A.precio_usd, 1)} del precio (${share(S.tienda.agrega_usd)} en la de merino).`;
+      `Marca y tienda se llevan ${pct(AS.tienda.agrega_usd / A.precio_usd, 1)} del precio (${share(S.tienda.agrega_usd)} en la de merino). ` +
+      `<strong>Ojo con la fábrica:</strong> la hoja de Quince es de una remera que se vende a 19,90 dólares; ésta se cose en Perú, en una fábrica con certificación de comercio justo, y probablemente cueste más. ` +
+      `Puesta en EE. UU. cuesta ${pct(AS.tienda.compra_usd / A.precio_usd, 1)} del precio; en la venta directa de Canada Goose, el costo de la mercadería es ${pct(1 - P.tienda_canada_goose.valor.dtc_margen_bruto, 1)} de las ventas. ` +
+      `Con el precio de fábrica más alto de los avisos, marca y tienda bajan a ${pct(A.marca_tienda_usd.alto / A.precio_usd, 1)}; con la tela más barata, suben a ${pct(A.marca_tienda_usd.bajo / A.precio_usd, 1)}. ` +
+      `Los precios del hilado y de la tela son chinos y el flete es el de la remera de merino desde Vietnam.`;
 
     document.getElementById("kilos-lede").textContent =
       `Una remera de ${grams(M.prenda_g)} tiene ${grams(M.lana_prenda_g)} de lana. Para llegar a ella hace falta comprar ${grams(M.peinada_g)} de peinada: ` +

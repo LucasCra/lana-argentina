@@ -274,6 +274,7 @@ def _cotton(assumptions: dict[str, Any]) -> dict[str, Any]:
     # As for the wool tee: the cost sheet's materials over this tee's fabric.
     base["tela_hoja"] = base["materiales"] / (_masses(base)["tela_g"] / 1000)
     central = _ladder(base)
+    variants = {k: _ladder({**base, "fabrica": k}) for k in FACTORY}
     return {
         "producto": cotton["producto"],
         "fibra": {"usd_kg": lint, "centavos_lb": v["indice_a"]},
@@ -286,7 +287,11 @@ def _cotton(assumptions: dict[str, Any]) -> dict[str, Any]:
             "ahorro_tlc_usd": central["fob_usd"] * v["arancel_nmf"],
         },
         **central,
-        "fabrica": {k: _ladder({**base, "fabrica": k})["fob_usd"] for k in FACTORY},
+        "fabrica": {k: ladder["fob_usd"] for k, ladder in variants.items()},
+        # Brand and shop keep what the factory does not: their share moves with its price.
+        "marca_tienda_usd": {
+            k: ladder["etapas"][-1]["agrega_usd"] for k, ladder in variants.items()
+        },
         "parametros": cotton["parametros"],
     }
 

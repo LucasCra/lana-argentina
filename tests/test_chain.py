@@ -259,6 +259,11 @@ def test_cotton_tee_runs_from_lint_to_the_shop_price(chain, assumptions):
     )
     f = cotton["fabrica"]
     assert f["bajo"] < f["central"] < f["alto"]
+    # What the factory charges more, brand and shop keep less, dollar for dollar plus duty.
+    shop = cotton["marca_tienda_usd"]
+    assert shop["alto"] < shop["central"] < shop["bajo"]
+    duty = cotton["arancel"]["total"]
+    assert shop["central"] - shop["alto"] == pytest.approx((f["alto"] - f["central"]) * (1 + duty))
 
 
 def test_cotton_tee_shares_the_wool_tees_downstream_assumptions(chain):
