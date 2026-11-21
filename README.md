@@ -50,6 +50,12 @@ desconocido; el mensaje dice qué tabla falló. Un país nuevo se agrega en `COU
   orígenes de las importaciones del último año (`origenes-AAAA.json`).
 - `pipeline/industry.py` — consumo interno, hilados y tejidos de la FLA y lana peinada por año calendario
   → `industria.html`, junto con lo de `comtrade.py`.
+- `data/provincias.json` — producción de lana por provincia de la zafra 2023/24 (toneladas sucias, movimientos
+  SIGSA/SENASA), leída de una lámina de la Secretaría de Agricultura guardada en `data/raw/provincias/`. La lámina
+  imprime el total nacional pero no las provincias: cada valor se midió sobre el gráfico del PDF y
+  `tests/test_provinces.py` repite esa medición. Se edita a mano; `pipeline/provinces.py` lo valida contra los
+  contornos de `site/vendor/argentina.js` (Natural Earth 1:10m, dominio público) y el build se detiene si un nombre
+  no tiene contorno o si las provincias suman más que el total.
 - `data/cadena.json` — los supuestos de la remera (precio, peso, mermas, precios de cada etapa, aranceles,
   márgenes de referencia), cada uno con su fuente, su tipo (fuente, inferencia o supuesto) y si se releyó en el
   original. Se edita a mano; el build se detiene si a un parámetro le falta la fuente o sale de su rango.
@@ -64,7 +70,7 @@ desconocido; el mensaje dice qué tabla falló. Un país nuevo se agrega en `COU
   `industria.html` y `industria.js` (lee también `historia-data.js`), `cadena.html` y `cadena.js`,
   `oportunidades.html` y `oportunidades.js` (lee los datos de las otras cuatro), `styles.css` y `ui.js`
   (común a las cinco: cabecera, recorrido entre páginas, animaciones y las fibras decorativas; no toca datos);
-  gráficos con ECharts, incluido en `site/vendor/`.
+  gráficos con ECharts, incluido en `site/vendor/` junto con los contornos del mundo y de las provincias.
 
 Para lana sucia, lavada y peinada la página de industria usa la FLA, no Comtrade: desde 2018 lo que
 Argentina informa a Comtrade queda por debajo de la FLA y de lo que declaran los compradores (la página

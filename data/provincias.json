@@ -1,0 +1,18 @@
+{
+  "zafra": "2023/24",
+  "unidad": "toneladas base sucia",
+  "total_nacional": 35748,
+  "fuente": "Secretaría de Agricultura, Ganadería y Pesca (DGByRM), «Contexto y análisis de la cadena ovina», Consejo Federal Agropecuario Patagonia, Trelew, 25 de febrero de 2025, lámina «Indicadores cadena lanera – zafra 2023/2024», con datos de SIGSA/SENASA",
+  "url": "https://www.magyp.gob.ar/sitio/areas/cfa/regionales/_archivos/000000_2025/000000_PATAGONIA/000000_Presentaciones/000000_Contexto%20y%20An%C3%A1lisis%20de%20la%20Cadena%20Ovina.pdf",
+  "archivo": "raw/provincias/cadena-ovina-cfa-patagonia-2025.pdf",
+  "metodo": "La lámina estima la producción con los movimientos de lana sucia registrados en SIGSA/SENASA desde el establecimiento hasta la industria, o hasta la barraca o el acopiador si no hay movimiento posterior. Trae el total nacional impreso pero las provincias sólo como barras sin rótulo: cada valor se midió sobre el gráfico vectorial del PDF (largo de la barra contra la escala de 0 a 14.000 t) y se redondeó a 10 t. tests/test_provinces.py repite la medición.",
+  "provincias": {
+    "Chubut": 11830,
+    "Santa Cruz": 9300,
+    "Buenos Aires": 5580,
+    "Río Negro": 2760,
+    "Tierra del Fuego": 2580,
+    "Corrientes": 2190,
+    "Neuquén": 360
+  }
+}

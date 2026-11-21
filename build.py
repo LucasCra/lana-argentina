@@ -4,7 +4,8 @@
     uv run --frozen python build.py --fetch    # first download new issues from flasite.com
 
 Writes data/processed/informes.json (every parsed table, for checking) and
-site/data.js (what the site draws) from the monthly issues in data/raw,
+site/data.js (what the site draws) from the monthly issues in data/raw and
+the production by province in data/provincias.json,
 data/processed/anuales.json and site/historia-data.js from the annual issues
 in data/raw/anuales, site/industria-data.js from the annual issues plus
 the UN Comtrade files in data/raw/comercio, site/cadena-data.js from the
@@ -31,12 +32,15 @@ from pipeline.history import derive_history
 from pipeline.industry import derive_industry
 from pipeline.opportunities import derive_opportunities
 from pipeline.parse import ReportError, parse_report
+from pipeline.provinces import load_provinces
 
 ROOT = Path(__file__).parent
 RAW = ROOT / "data" / "raw"
 ANNUAL = RAW / "anuales"
 TRADE = RAW / "comercio"
 CHAIN = ROOT / "data" / "cadena.json"
+PROVINCES = ROOT / "data" / "provincias.json"
+ARGENTINA = ROOT / "site" / "vendor" / "argentina.js"
 FIRST_TRADE_YEAR = 2000
 
 
@@ -69,6 +73,11 @@ def main() -> int:
     reports.sort(key=lambda r: r["hasta"])
     data = derive(reports, load_sources(RAW))
     data["generado"] = date.today().isoformat()
+    try:
+        data["produccion_provincias"] = load_provinces(PROVINCES, ARGENTINA)
+    except ReportError as error:
+        print(f"ERROR {PROVINCES.name}: {error}", file=sys.stderr)
+        return 1
     latest = max(annual, key=lambda r: r["temporada"])
     history = derive_history(
         annual, production_history(ANNUAL / latest["archivo"]), load_sources(ANNUAL)

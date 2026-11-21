@@ -967,6 +967,77 @@
       }),
     },
 
+    // No es estacional: es una sola zafra de otra fuente, en base sucia.
+    origen: {
+      title: "De dónde sale la lana",
+      sub: () => {
+        const o = D.produccion_provincias;
+        return `Producción por provincia, zafra ${o.zafra}, en ${o.unidad}, según los movimientos de lana registrados por SENASA. No cambia con la temporada elegida.`;
+      },
+      height: "tall",
+      foot: () => {
+        const o = D.produccion_provincias;
+        return `En gris, provincias que la fuente no desglosa: entre todas suman ${tons(o.resto)} (${pct(o.resto / o.total_nacional)} del total nacional de ${tons(o.total_nacional)}). Los valores se midieron sobre un gráfico de barras sin rótulos y se redondearon a 10 t. Fuente: Secretaría de Agricultura, con datos de SENASA.`;
+      },
+      option() {
+        const o = D.produccion_provincias;
+        const max = o.provincias[0].toneladas;
+        const byName = Object.fromEntries(o.provincias.map((p) => [p.provincia, p.toneladas]));
+        return {
+          ...base(),
+          tooltip: {
+            ...base().tooltip,
+            trigger: "item",
+            formatter: (p) => {
+              const t = byName[p.name];
+              if (t == null) return `${esc(p.name)}<br><span style="color:${C.muted}">sin dato propio en la fuente</span>`;
+              return `<b>${esc(p.name)}</b><br>${tons(t)} sucias · ${pct(t / o.total_nacional)} del país`;
+            },
+          },
+          visualMap: {
+            type: "continuous",
+            min: 0,
+            max,
+            seriesIndex: 0,
+            inRange: { color: C.seq },
+            calculable: false,
+            orient: "horizontal",
+            right: 8,
+            bottom: 8,
+            itemWidth: 10,
+            itemHeight: 120,
+            text: [`${num(max)} t`, "0"],
+            textStyle: { color: C.muted, fontSize: 11 },
+          },
+          series: [
+            {
+              type: "map",
+              map: "argentina",
+              roam: false,
+              layoutCenter: ["45%", "50%"],
+              layoutSize: "96%",
+              itemStyle: { areaColor: C.empty, borderColor: C.surface, borderWidth: 0.8 },
+              emphasis: { itemStyle: { areaColor: C.s2 }, label: { show: false } },
+              select: { disabled: true },
+              label: { show: false },
+              data: o.provincias.map((p) => ({ name: p.provincia, value: p.toneladas })),
+            },
+          ],
+        };
+      },
+      table: () => {
+        const o = D.produccion_provincias;
+        return {
+          head: ["Provincia", "Toneladas sucias", "Del total nacional"],
+          rows: [
+            ...o.provincias.map((p) => [p.provincia, num(p.toneladas), pct(p.toneladas / o.total_nacional)]),
+            [`Resto (${o.sin_dato.length} jurisdicciones, sin desglose)`, num(o.resto), pct(o.resto / o.total_nacional)],
+            ["Total nacional", num(o.total_nacional), "100%"],
+          ],
+        };
+      },
+    },
+
     puertos: {
       seasonal: true,
       title: "Toneladas por puerto",
@@ -1014,6 +1085,7 @@
         };
       },
       foot: "◆ puerto patagónico.",
+      height: "tall",
       table: () => {
         const s = S();
         return {
