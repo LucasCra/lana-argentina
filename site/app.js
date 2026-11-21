@@ -173,6 +173,10 @@
     s.completa ? `${s.temporada} completa` : `${s.temporada} · ${monthName(s.desde)} – ${monthName(s.hasta)}`;
   const months = D.meses;
   const monthCats = months.map((m) => m.etiqueta + (m.ajuste_anual ? " *" : "") + (m.provisional ? " p" : ""));
+  // Precio por producto de cada mes: solo los bloques de un único mes (el bloque de varios meses no se reparte).
+  const priceByProduct = months.map(
+    (m) => D.bloques.find((b) => b.meses.length === 1 && b.meses[0] === m.mes)?.usd_kg_producto || {},
+  );
   const provisional = months.filter((m) => m.provisional);
   const PROV_NOTE = provisional.length
     ? `p = provisional: ${provisional.map((m) => m.etiqueta).join(" y ")} llevan pocas versiones publicadas y la FLA ` +
@@ -282,9 +286,17 @@
     mensualPrecio: {
       title: "Precio implícito por mes",
       sub: () => "Dólares por kilo limpio, todos los productos",
+      legend: () => [
+        { label: "Total", color: C.ink, line: true },
+        ...PRODUCTS.map((p) => ({ label: PNAME[p], color: pColor(p), line: true, series: PNAME[p] })),
+      ],
       foot: () =>
         "Ingreso de divisas del mes / toneladas limpias del mes. El punto gris es junio 2026 (ajuste anual); " +
-        "los puntos huecos son meses provisionales. Cuando julio 2026 se corrigió al alza, su precio bajó de 9,15 a 7,99.",
+        "los puntos huecos son meses provisionales. Cuando julio 2026 se corrigió al alza, su precio bajó de 9,15 a 7,99. " +
+        "Las líneas por producto salen de la diferencia entre las tablas de temporada de informes consecutivos, porque la tabla mensual no reparte los dólares por producto. " +
+        "Julio 2025 a enero 2026 es un solo bloque, así que las líneas por producto empiezan en feb 26. " +
+        "Cada punto de producto puede absorber correcciones de la FLA a meses anteriores (por ejemplo, el bloque de sep 26 trae la corrección al alza de jul 26), " +
+        "por eso no coinciden exactamente con la línea del total.",
       height: "short",
       option() {
         const last = months.length - 1;
@@ -296,12 +308,27 @@
             axisPointer: { type: "line", lineStyle: { color: C.axis } },
             formatter: (ps) => {
               const m = months[ps[0].dataIndex];
-              return `<b>${m.etiqueta}</b><br>${perKg(m.usd_kg)}<br>${tons(m.total_t)} · ${usdM(m.ingresos_usd)}${provTip(m)}`;
+              const prods = PRODUCTS.filter((p) => ps.some((x) => x.seriesName === PNAME[p]) && priceByProduct[ps[0].dataIndex][p] != null)
+                .map((p) => `${swatch(pColor(p), true)}${PNAME[p]}: ${perKg(priceByProduct[ps[0].dataIndex][p])}`)
+                .join("<br>");
+              return (
+                `<b>${m.etiqueta}</b><br>${swatch(C.ink, true)}Total: ${perKg(m.usd_kg)}<br>${tons(m.total_t)} · ${usdM(m.ingresos_usd)}${provTip(m)}` +
+                (prods ? `<br>${prods}` : "")
+              );
             },
           },
+          legend: { show: false, data: PRODUCTS.map((p) => PNAME[p]) },
           xAxis: axisCat(monthCats, { boundaryGap: false }),
           yAxis: axisVal((v) => num(v, 0), { scale: true }),
           series: [
+            ...PRODUCTS.map((p) =>
+              lineSeries(
+                PNAME[p],
+                priceByProduct.map((d) => d[p] ?? null),
+                pColor(p),
+                { symbolSize: 4, lineStyle: { width: 1.25, color: pColor(p) }, connectNulls: false },
+              ),
+            ),
             lineSeries(
               "USD/kg",
               months.map((m, i) => ({
@@ -309,7 +336,7 @@
                 itemStyle: m.ajuste_anual
                   ? { color: C.muted, borderColor: C.surface, borderWidth: 2 }
                   : m.provisional
-                    ? { color: C.surface, borderColor: C.s1, borderWidth: 2 }
+                    ? { color: C.surface, borderColor: C.ink, borderWidth: 2 }
                     : undefined,
                 label:
                   i === last
@@ -322,15 +349,21 @@
                       }
                     : undefined,
               })),
-              C.s1,
-              { areaStyle: { color: C.s1, opacity: 0.08 } },
+              C.ink,
+              { areaStyle: { color: C.ink, opacity: 0.08 } },
             ),
           ],
         };
       },
       table: () => ({
-        head: ["Mes", "USD/kg", "Toneladas", "USD"],
-        rows: months.map((m) => [m.etiqueta, num(m.usd_kg, 2), num(m.total_t, 1), num(m.ingresos_usd)]),
+        head: ["Mes", "USD/kg", "Toneladas", "USD", ...PRODUCTS.map((p) => PNAME[p])],
+        rows: months.map((m, i) => [
+          m.etiqueta,
+          num(m.usd_kg, 2),
+          num(m.total_t, 1),
+          num(m.ingresos_usd),
+          ...PRODUCTS.map((p) => (priceByProduct[i][p] == null ? "" : num(priceByProduct[i][p], 2))),
+        ]),
       }),
     },
 
@@ -1059,6 +1092,12 @@
       <div class="legend"></div>
       <div class="table-wrap" hidden></div>
       <p class="card-foot"></p>`;
+    el.querySelector(".legend").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-series]");
+      if (!b) return;
+      b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true"));
+      instances[id]?.dispatchAction({ type: "legendToggleSelect", name: b.dataset.series });
+    });
     const btn = el.querySelector(".btn");
     const wrap = el.querySelector(".table-wrap");
     btn.addEventListener("click", () => {
@@ -1089,7 +1128,12 @@
     footEl.hidden = !foot;
     const legend = spec.legend ? spec.legend() : [];
     card.querySelector(".legend").innerHTML = legend
-      .map((l) => `<span><i class="${l.line ? "line" : ""}" style="background:${l.color}"></i>${esc(l.label)}</span>`)
+      .map((l) => {
+        const inner = `<i class="${l.line ? "line" : ""}" style="background:${l.color}"></i>${esc(l.label)}`;
+        return l.series
+          ? `<button type="button" class="leg-btn" aria-pressed="true" data-series="${esc(l.series)}">${inner}</button>`
+          : `<span>${inner}</span>`;
+      })
       .join("");
     const node = card.querySelector(".chart");
     instances[id] ??= echarts.init(node, null, { renderer: "canvas" });
