@@ -555,7 +555,10 @@
       `<strong>Flete y arancel, ${usd(S.importacion.agrega_usd)}.</strong> Flete y seguro, ${usd(part(S.importacion, "flete"))} (supuesto). ` +
         `Arancel, ${usd(part(S.importacion, "arancel"))}: EE. UU. lo cobra sobre el precio pagado a la fábrica, sin el flete internacional. Lo cobra el Estado; no es ganancia de nadie en la cadena. ` +
         `${link(D.producto.otro_origen.url, "Otra tienda")} lista el mismo estilo como hecho en China: ahí el arancel sería ${pct(D.arancel.nmf + D.arancel.china)} ` +
-        `y la remera costaría ${usd(SC.hecha_china.importacion_usd - SC.base.importacion_usd)} más (escenario “Hecha en China”).`,
+        `y la remera costaría ${usd(SC.hecha_china.importacion_usd - SC.base.importacion_usd)} más (escenario “Hecha en China”). ` +
+        `Hecha en la Argentina pagaría ${pct(D.arancel.nmf + D.arancel.argentina)} en EE. UU., ${usd(SC.base.importacion_usd - SC.hecha_argentina.importacion_usd)} menos que desde Vietnam; ` +
+        `vendida en la Unión Europea, ${pct(D.arancel.ue.inicio, 1)} en ${D.arancel.ue.anio_0} y nada desde ${D.arancel.ue.libre_desde}. ` +
+        `Esos tres escenarios sólo cambian el arancel: la cuenta no tiene costos de fábrica argentinos.`,
       `<strong>Marca y tienda, ${usd(shop.agrega_usd)}.</strong> Lo que queda entre la remera puesta en EE. UU. (${usd(shop.compra_usd)}) y el precio. ` +
         `Tienda y venta directa (alquiler, personal, web, envíos), ${usd(part(shop, "tienda"))}; marca y oficina central (diseño, publicidad, administración), ${usd(part(shop, "marca"))}: ` +
         `${pct(D.tienda.tienda, 1)} y ${pct(D.tienda.marca, 1)} de las ventas, como en la venta directa de Canada Goose. ` +
@@ -620,7 +623,10 @@
         `(con peinada argentina, ${usd(SC.fabrica_bajo.fob_usd + SC.fabrica_bajo.importacion_usd)}). Por eso los avisos quedan como piso.`,
       `<strong>Arancel.</strong> Partida 6109.90.80 del arancel de EE. UU. (remeras de punto de lana de manga corta), ${pct(D.arancel.nmf)}, más ${pct(D.arancel.s301, 1)} de la Sección 301 para productos de Vietnam desde el 24 de julio de 2026. ` +
         `Se cobra sobre el precio pagado a la fábrica, sin el flete ni el seguro internacionales (${link("https://www.law.cornell.edu/uscode/text/19/1401a", "19 U.S.C. § 1401a(b)(4)(A)")}). ` +
-        `El recargo está impugnado; el escenario “sin el recargo” muestra el caso.`,
+        `El recargo está impugnado; el escenario “sin el recargo” muestra el caso. ` +
+        `Para una remera hecha en la Argentina, EE. UU. suma al arancel general ${pct(D.arancel.argentina)} de la misma Sección 301. ` +
+        `La Unión Europea cobra ${pct(P.arancel_ue.valor)} y el acuerdo con el Mercosur lo baja en ${P.arancel_ue.etapas} etapas anuales iguales desde ${D.arancel.ue.anio_0}, ` +
+        `si la tela se teje y la prenda se confecciona en el Mercosur o con tela europea; las fuentes y lo que esos escenarios dejan fijo están en la tabla de supuestos.`,
       `<strong>Ganancia y costos.</strong> En el hilado, la tela y la confección, la ganancia es el margen operativo de una empresa cotizada de la etapa por lo que vende la etapa; en la marca y la tienda, lo que queda después de los gastos de tienda y de marca. ` +
         `Son promedios de empresas enteras, con otras fibras y otros clientes: indican el orden de magnitud, no la cuenta de esta remera.`,
       `<strong>Monedas.</strong> Euros y yuanes a dólares con el promedio mensual o anual del Banco Central Europeo. Dólares corrientes.`,

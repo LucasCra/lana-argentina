@@ -24,7 +24,12 @@ How the chain is built, per shirt:
   gives the low bound of the factory-gate price; asking prices for finished
   tees give the high one.
 - Import. US duty (MFN plus Section 301 for Vietnam) on the factory-gate
-  price, which is the US customs value, plus freight per shirt.
+  price, which is the US customs value, plus freight per shirt. The
+  made-in-Argentina scenarios swap only that rate: the US one for Argentine
+  goods, or the EU's Mercosur rate in its first year and once it reaches zero.
+  They keep the factory price (the model has no Argentine factory costs), the
+  freight and the US shelf price, and charge the EU rate on the factory price
+  although the EU's customs value includes freight.
 - Brand and shop. Retail price minus landed cost. Shop and central costs are
   Canada Goose's direct-to-consumer shares of sales; profit is the remainder,
   so the three parts add up to the residual by construction.
@@ -79,6 +84,12 @@ def derive_chain(monthly: dict[str, Any], assumptions: dict[str, Any]) -> dict[s
 
     losses = {"m_hilado": "merma_hilado", "m_tejido": "merma_tejido", "m_corte": "merma_corte"}
     actual = fla["actual"]
+    us_argentina = base["nmf"] + base["argentina"]
+    # The EU cuts its rate in equal yearly steps, the first on entry into force:
+    # year 0 already pays one step less than the base rate, and the last step is zero.
+    eu = P["arancel_ue"]
+    eu_first = eu["valor"] * (1 - 1 / eu["etapas"])
+    eu_free_from = eu["anio_0"] + eu["etapas"] - 1
     scenarios = [
         (
             "base",
@@ -158,6 +169,29 @@ def derive_chain(monthly: dict[str, Any], assumptions: dict[str, Any]) -> dict[s
             "como la partida que otra tienda lista hecha en China",
             run(arancel=base["nmf"] + base["china"]),
         ),
+        (
+            "hecha_argentina",
+            "arancel",
+            "Argentina a EE. UU.",
+            f"Hecha en la Argentina; sólo cambia el arancel: {_es(100 * us_argentina)} %, "
+            "el general más la Sección 301 a la Argentina",
+            run(arancel=us_argentina),
+        ),
+        (
+            "argentina_ue_inicio",
+            "arancel",
+            f"Argentina a la UE, {eu['anio_0']}",
+            f"Hecha en la Argentina; sólo cambia el arancel: {_es(100 * eu_first, 1)} %, "
+            "primer año del acuerdo UE–Mercosur",
+            run(arancel=eu_first),
+        ),
+        (
+            "argentina_ue_libre",
+            "arancel",
+            f"Argentina a la UE, {eu_free_from}",
+            "Hecha en la Argentina; sólo cambia el arancel: libre al terminar la desgravación",
+            run(arancel=0.0),
+        ),
         *[
             (
                 f"oferta_{i}",
@@ -178,6 +212,8 @@ def derive_chain(monthly: dict[str, Any], assumptions: dict[str, Any]) -> dict[s
             "nmf": base["nmf"],
             "s301": base["s301"],
             "china": base["china"],
+            "argentina": base["argentina"],
+            "ue": {"inicio": eu_first, "anio_0": eu["anio_0"], "libre_desde": eu_free_from},
             "total": base["arancel"],
         },
         "tienda": {"tienda": base["tienda"], "marca": base["marca"]},
@@ -255,6 +291,7 @@ def _params(P: dict[str, Any], tops: float, fine_tops: float) -> dict[str, Any]:
         "nmf": v["arancel_nmf"],
         "s301": v["arancel_301"],
         "china": v["arancel_china"],
+        "argentina": v["arancel_301_argentina"],
         "arancel": v["arancel_nmf"] + v["arancel_301"],
         "g_hilado": v["margen_hilado"],
         "g_tela": v["margen_tela"],

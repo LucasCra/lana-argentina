@@ -196,6 +196,28 @@ def test_made_in_china_pays_both_china_surcharges(chain):
     assert duty == pytest.approx(china["fob_usd"] * (0.16 + 0.075 + 0.125))
 
 
+def test_made_in_argentina_changes_only_the_duty(chain):
+    by_id = {s["id"]: s for s in chain["escenarios"]}
+    base = by_id["base"]
+    freight = chain["parametros"]["flete_usd"]["valor"]
+    rows = {
+        "hecha_argentina": 0.16 + 0.10,
+        # Nine equal yearly cuts of the EU's 12 %: one is already made in the first year.
+        "argentina_ue_inicio": 0.12 * 8 / 9,
+        "argentina_ue_libre": 0.0,
+    }
+    for id_, rate in rows.items():
+        s = by_id[id_]
+        assert s["fob_usd"] == pytest.approx(base["fob_usd"])
+        assert s["precio_usd"] == base["precio_usd"]
+        assert s["importacion_usd"] - freight == pytest.approx(s["fob_usd"] * rate)
+    assert chain["arancel"]["ue"] == {
+        "inicio": pytest.approx(0.12 * 8 / 9),
+        "anio_0": 2026,
+        "libre_desde": 2034,
+    }
+
+
 def test_every_comparable_says_whether_it_was_reread(tmp_path):
     data = json.loads(ASSUMPTIONS.read_text())
     del data["comparables"][0]["releido"]

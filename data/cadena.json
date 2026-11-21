@@ -242,6 +242,30 @@
       "fecha": "2026-11-20",
       "nota": "Con el 16 % general, 36 % en total. Sólo cuenta en el escenario “Hecha en China”."
     },
+    "arancel_301_argentina": {
+      "nombre": "Recargo de la Sección 301 a productos de la Argentina (trabajo forzoso)",
+      "valor": 0.1,
+      "unidad": "fracción del valor en aduana",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "USTR, aviso de la acción final en las investigaciones de la Sección 301 (23 de julio de 2026): 10 % a productos de la Argentina desde el 24 de julio de 2026 (partida 9903.05.22), sumado al arancel general",
+      "url": "https://ustr.gov/sites/default/files/files/Press/Releases/2026/FLIP%20301%20Investigation%20Final%20Action%20FRN%207-23-26%20FINAL.pdf",
+      "fecha": "2026-07-23",
+      "nota": "Es el mismo aviso del recargo a Vietnam. Las exenciones para la Argentina (nota 52(j)(8) del Anexo I y partes A e I del Anexo II) no incluyen los capítulos 51, 61 ni 62. Con el 16 % general, 26 % en total; supone que la Argentina no tiene preferencia sobre el arancel general, que no se revisó. Sólo cuenta en el escenario “Argentina a EE. UU.”."
+    },
+    "arancel_ue": {
+      "nombre": "Arancel de la Unión Europea a una remera de lana del Mercosur (NC 6109 90 20), antes de la desgravación",
+      "valor": 0.12,
+      "etapas": 9,
+      "anio_0": 2026,
+      "unidad": "fracción del valor en aduana",
+      "tipo": "fuente",
+      "releido": true,
+      "fuente": "Consejo de la UE, documento 12419/25 ADD 4 (Acuerdo Interino de Comercio UE–Mercosur, apéndice 2-A-1): 6109 90 20, tasa base 12, categoría 8; ADD 1, anexo 2-A: la categoría 8 se elimina en 9 etapas anuales iguales y queda libre el 1 de enero del año 8",
+      "url": "https://data.consilium.europa.eu/doc/document/ST-12419-2025-ADD-4/en/pdf",
+      "fecha": "2025-12-10",
+      "nota": "El acuerdo se aplica en forma provisional desde el 1 de mayo de 2026; tomar 2026 como año 0 es una lectura propia: la primera etapa deja 8/9 de la tasa ese año y la última la lleva a cero en 2034. Para tener la preferencia, la tela debe tejerse y la prenda confeccionarse en el Mercosur, o con tela originaria de la UE (anexo 3-B y artículo 3.3, releídos). La UE cobra sobre el valor con flete y seguro; la cuenta lo aplica al precio de fábrica, unos 5 centavos menos por remera. Los escenarios “a la UE” mantienen el precio de la tienda de EE. UU. (sin IVA), sus gastos de tienda, el flete y el precio de fábrica."
+    },
     "margen_hilado": {
       "nombre": "Ganancia del hilandero (proxy)",
       "valor": 0.12,
